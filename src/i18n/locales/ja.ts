@@ -10,7 +10,7 @@ const ja = {
 
   // ── MemoListScreen ────────────────────────────────────────
   memoList: {
-    headerTitle: '買い物リスト',
+    headerTitle: 'よりみちリスト',
     deleteTitle: 'メモを削除',
     deleteMessage: '「{{title}}」を削除しますか？',
     itemsLeft: '{{unchecked}} / {{total}} 点残り',
@@ -25,7 +25,7 @@ const ja = {
     screenTitleEdit: 'メモを編集',
     titleLabel: 'タイトル',
     titlePlaceholder: '例: スーパーで買うもの',
-    itemsLabel: '買い物アイテム',
+    itemsLabel: 'よりみちメモ',
     addItemPlaceholder: '+ アイテムを追加',
     doneButton: '完了',
     errorTitle: 'エラー',
@@ -41,7 +41,7 @@ const ja = {
     locationSection: '📍 場所 ({{count}} / 3)',
     addLocation: '追加',
     locationEmpty: '場所を追加するとそこに近づいたとき通知が来ます',
-    itemSection: '🛒 買い物リスト',
+    itemSection: '🛒 よりみちメモ',
     itemEmpty: '編集画面でアイテムを追加してください',
     radiusLabel: '半径 {{radius}}m',
     completeBtnDone: '未完了に戻す',
@@ -110,7 +110,7 @@ const ja = {
     appInfo: {
       title: 'アプリ情報',
       version: 'バージョン: 1.0.0',
-      name: 'ShoppingReminder',
+      name: 'Yorimichi',
     },
     alertFineLocation: {
       title: '位置情報の許可が必要です',

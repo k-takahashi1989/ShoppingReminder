@@ -10,7 +10,7 @@ const en: Translation = {
   },
 
   memoList: {
-    headerTitle: 'Shopping List',
+    headerTitle: 'My Nearist',
     deleteTitle: 'Delete Memo',
     deleteMessage: 'Delete "{{title}}"?',
     itemsLeft: '{{unchecked}} / {{total}} left',
@@ -24,7 +24,7 @@ const en: Translation = {
     screenTitleEdit: 'Edit Memo',
     titleLabel: 'Title',
     titlePlaceholder: 'e.g. Things to buy at supermarket',
-    itemsLabel: 'Shopping items',
+    itemsLabel: 'Nearist Notes',
     addItemPlaceholder: '+ Add item',
     doneButton: 'Done',
     errorTitle: 'Error',
@@ -39,7 +39,7 @@ const en: Translation = {
     locationSection: '📍 Locations ({{count}} / 3)',
     addLocation: 'Add',
     locationEmpty: 'Add a location to get notified when you arrive nearby',
-    itemSection: '🛒 Shopping List',
+    itemSection: '🛒 Nearist Notes',
     itemEmpty: 'Add items in the edit screen',
     radiusLabel: 'Radius {{radius}}m',
     completeBtnDone: 'Mark as incomplete',
@@ -106,7 +106,7 @@ const en: Translation = {
     appInfo: {
       title: 'App Info',
       version: 'Version: 1.0.0',
-      name: 'ShoppingReminder',
+      name: 'Nearist',
     },
     alertFineLocation: {
       title: 'Location permission required',
