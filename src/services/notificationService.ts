@@ -45,7 +45,7 @@ export async function showArrivalNotification(params: {
       },
       pressAction: {
         id: 'open_memo',
-        launchActivity: 'default',
+        launchActivity: 'com.ktakahashi.shoppingreminder.MainActivity',
       },
       smallIcon: 'ic_notification',
       color: '#4CAF50',
