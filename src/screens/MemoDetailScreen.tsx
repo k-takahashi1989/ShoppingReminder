@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
   Alert,
@@ -68,24 +68,53 @@ export default function MemoDetailScreen(): React.JSX.Element {
     ]);
   };
 
-  const renderItem = ({ item }: { item: ShoppingItem }) => (
-    <TouchableOpacity
-      style={styles.itemRow}
-      onPress={() => toggleItem(memoId, item.id)}
-      activeOpacity={0.7}>
-      <Icon
-        name={item.isChecked ? 'check-box' : 'check-box-outline-blank'}
-        size={24}
-        color={item.isChecked ? '#4CAF50' : '#9E9E9E'}
-      />
-      <Text style={[styles.itemText, item.isChecked && styles.itemChecked]}>
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
+  const handleToggleItem = useCallback((item: ShoppingItem) => {
+    if (item.isChecked) {
+      Alert.alert(
+        t('memoDetail.uncheckTitle'),
+        t('memoDetail.uncheckMessage'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('common.confirm'), onPress: () => toggleItem(memoId, item.id) },
+        ],
+      );
+    } else {
+      toggleItem(memoId, item.id);
+    }
+  }, [memoId, t, toggleItem]);
+
+  const renderShoppingItem = (item: ShoppingItem) => {
+    const dateStr =
+      item.isChecked && item.checkedAt
+        ? new Date(item.checkedAt).toLocaleDateString()
+        : null;
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={styles.itemRow}
+        onPress={() => handleToggleItem(item)}
+        activeOpacity={0.7}>
+        <Icon
+          name={item.isChecked ? 'check-box' : 'check-box-outline-blank'}
+          size={24}
+          color={item.isChecked ? '#4CAF50' : '#9E9E9E'}
+        />
+        <Text style={[styles.itemText, item.isChecked && styles.itemChecked]}>
+          {item.name}
+        </Text>
+        {dateStr !== null && (
+          <Text style={styles.itemDate}>{dateStr}</Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
       {/* タイトル + 編集ボタン */}
       <View style={styles.titleRow}>
         <Text style={styles.title}>{memo.title}</Text>
@@ -141,35 +170,37 @@ export default function MemoDetailScreen(): React.JSX.Element {
             {t('memoDetail.itemEmpty')}
           </Text>
         ) : (
-          <FlatList
-            data={memo.items}
-            keyExtractor={item => item.id}
-            renderItem={renderItem}
-            scrollEnabled={false}
-          />
+          memo.items.map(renderShoppingItem)
         )}
       </View>
 
+      </ScrollView>
+
       {/* 完了ボタン */}
-      <TouchableOpacity
-        style={[styles.completeBtn, memo.isCompleted && styles.completeBtnDone]}
-        onPress={handleComplete}>
-        <Icon
-          name={memo.isCompleted ? 'undo' : 'check-circle'}
-          size={20}
-          color="#fff"
-        />
-        <Text style={styles.completeBtnText}>
-          {memo.isCompleted ? t('memoDetail.completeBtnDone') : t('memoDetail.completeBtnActive')}
-        </Text>
-      </TouchableOpacity>
-      <AdBanner />
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[styles.completeBtn, memo.isCompleted && styles.completeBtnDone]}
+          onPress={handleComplete}>
+          <Icon
+            name={memo.isCompleted ? 'undo' : 'check-circle'}
+            size={20}
+            color="#fff"
+          />
+          <Text style={styles.completeBtnText}>
+            {memo.isCompleted ? t('memoDetail.completeBtnDone') : t('memoDetail.completeBtnActive')}
+          </Text>
+        </TouchableOpacity>
+        <AdBanner />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5', padding: 16 },
+  container: { flex: 1, backgroundColor: '#F5F5F5' },
+  scroll: { flex: 1 },
+  scrollContent: { padding: 16, paddingBottom: 8 },
+  bottomBar: { paddingHorizontal: 16, paddingTop: 4, backgroundColor: '#F5F5F5' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   titleRow: {
     flexDirection: 'row',
@@ -217,6 +248,7 @@ const styles = StyleSheet.create({
   },
   itemText: { fontSize: 15, color: '#212121', flex: 1 },
   itemChecked: { color: '#9E9E9E', textDecorationLine: 'line-through' },
+  itemDate: { fontSize: 11, color: '#9E9E9E', marginLeft: 4 },
   completeBtn: {
     backgroundColor: '#4CAF50',
     borderRadius: 12,

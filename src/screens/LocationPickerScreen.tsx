@@ -8,6 +8,7 @@ import {
   Alert,
   Platform,
   Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {
   useNavigation,
@@ -266,6 +267,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
       </View>
 
       {/* フォーム: 場所名・半径・保存ボタン */}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={[styles.form, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         {/* 場所名 */}
         <View style={styles.inputGroup}>
@@ -314,6 +316,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           <Text style={styles.saveBtnText}>{t('locationPicker.saveButton')}</Text>
         </TouchableOpacity>
       </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }

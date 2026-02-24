@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // データモデルの型定義
 // ============================================================
 
@@ -6,6 +6,7 @@ export interface ShoppingItem {
   id: string;
   name: string;
   isChecked: boolean;
+  checkedAt?: number;
 }
 
 export interface MemoLocation {

@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Memo, ShoppingItem, MemoLocation } from '../types';
 import { mmkvStorage } from '../storage/mmkvStorage';
@@ -138,7 +138,13 @@ export const useMemoStore = create<MemoState>()(
             return {
               ...m,
               items: m.items.map(it =>
-                it.id === itemId ? { ...it, isChecked: !it.isChecked } : it,
+                it.id === itemId
+                  ? {
+                      ...it,
+                      isChecked: !it.isChecked,
+                      checkedAt: !it.isChecked ? Date.now() : undefined,
+                    }
+                  : it,
               ),
               updatedAt: Date.now(),
             };

@@ -49,6 +49,8 @@ const en: Translation = {
     toggleMsgUndo: 'Mark this memo as incomplete?',
     deleteLocTitle: 'Delete Location',
     deleteLocMessage: 'Delete "{{label}}"?',
+    uncheckTitle: 'Uncheck item?',
+    uncheckMessage: 'The recorded purchase date will also be cleared.',
   },
 
   locationPicker: {

@@ -51,6 +51,8 @@ const ja = {
     toggleMsgUndo: 'このメモを未完了に戻しますか？',
     deleteLocTitle: '場所を削除',
     deleteLocMessage: '「{{label}}」を削除しますか？',
+    uncheckTitle: 'チェックを外しますか？',
+    uncheckMessage: '購入日時の記録もクリアされます。',
   },
 
   // ── LocationPickerScreen ──────────────────────────────────
