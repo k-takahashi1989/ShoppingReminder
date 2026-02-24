@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import {
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdBanner from '../components/AdBanner';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../store/memoStore';
 import {
   startGeofenceMonitoring,
@@ -52,6 +53,7 @@ async function checkLocationPermissions(): Promise<{
 }
 
 export default function SettingsScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const defaultRadius = useSettingsStore(s => s.defaultRadius);
   const setDefaultRadius = useSettingsStore(s => s.setDefaultRadius);
   const maxRadius = useSettingsStore(s => s.maxRadius);
@@ -79,11 +81,11 @@ export default function SettingsScreen(): React.JSX.Element {
     const fineResult = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
     if (fineResult !== RESULTS.GRANTED) {
       Alert.alert(
-        '位置情報の許可が必要です',
-        '設定 > アプリ > ShoppingReminder > 位置情報から許可してください',
+        t('settings.alertFineLocation.title'),
+        t('settings.alertFineLocation.message'),
         [
-          { text: 'キャンセル', style: 'cancel' },
-          { text: '設定を開く', onPress: () => openSettings() },
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('settings.alertFineLocation.openSettings'), onPress: () => openSettings() },
         ],
       );
       await refreshPerms();
@@ -95,11 +97,11 @@ export default function SettingsScreen(): React.JSX.Element {
       const bgResult = await request(PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION);
       if (bgResult !== RESULTS.GRANTED) {
         Alert.alert(
-          'バックグラウンド位置情報が必要です',
-          '設定で「常に許可」を選択してください。これによりアプリを閉じているときも通知が届きます。',
+          t('settings.alertBackground.title'),
+          t('settings.alertBackground.message'),
           [
-            { text: 'キャンセル', style: 'cancel' },
-            { text: '設定を開く', onPress: () => openSettings() },
+            { text: t('common.cancel'), style: 'cancel' },
+            { text: t('settings.alertFineLocation.openSettings'), onPress: () => openSettings() },
           ],
         );
       }
@@ -121,7 +123,7 @@ export default function SettingsScreen(): React.JSX.Element {
       setIsMonitoring(false);
     } else {
       if (perms.fine !== 'granted') {
-        Alert.alert('位置情報の許可が必要です', '先に位置情報を許可してください');
+        Alert.alert(t('settings.alertFineLocation.title'), t('settings.alertMonitor.message'));
         return;
       }
       await startGeofenceMonitoring();
@@ -137,26 +139,26 @@ export default function SettingsScreen(): React.JSX.Element {
 
   const statusText = (s: PermStatus) => {
     switch (s) {
-      case 'granted': return 'オン';
-      case 'denied': return 'オフ';
-      case 'blocked': return 'ブロック中';
-      case 'unavailable': return '利用不可';
-      default: return '確認中...';
+      case 'granted': return t('settings.status.on');
+      case 'denied': return t('settings.status.off');
+      case 'blocked': return t('settings.status.blocked');
+      case 'unavailable': return t('settings.status.unavailable');
+      default: return t('settings.status.checking');
     }
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.pageTitle}>⚙️ 設定</Text>
+      <Text style={styles.pageTitle}>{t('settings.screenTitle')}</Text>
 
       {/* 権限セクション */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>通知・位置情報の権限</Text>
+        <Text style={styles.cardTitle}>{t('settings.permCard.title')}</Text>
 
         <View style={styles.permRow}>
           {statusIcon(perms.fine)}
           <View style={styles.permBody}>
-            <Text style={styles.permName}>位置情報 (前景)</Text>
+            <Text style={styles.permName}>{t('settings.permCard.foreground')}</Text>
             <Text style={styles.permStatus}>{statusText(perms.fine)}</Text>
           </View>
         </View>
@@ -164,7 +166,7 @@ export default function SettingsScreen(): React.JSX.Element {
         <View style={styles.permRow}>
           {statusIcon(perms.background)}
           <View style={styles.permBody}>
-            <Text style={styles.permName}>位置情報 (バックグラウンド)</Text>
+            <Text style={styles.permName}>{t('settings.permCard.background')}</Text>
             <Text style={styles.permStatus}>{statusText(perms.background)}</Text>
           </View>
         </View>
@@ -172,36 +174,36 @@ export default function SettingsScreen(): React.JSX.Element {
         <View style={styles.permRow}>
           {statusIcon(perms.notification)}
           <View style={styles.permBody}>
-            <Text style={styles.permName}>プッシュ通知</Text>
+            <Text style={styles.permName}>{t('settings.permCard.notification')}</Text>
             <Text style={styles.permStatus}>{statusText(perms.notification)}</Text>
           </View>
         </View>
 
         <TouchableOpacity style={styles.permBtn} onPress={handleRequestPerms}>
           <Icon name="lock-open" size={18} color="#fff" />
-          <Text style={styles.permBtnText}>位置情報・通知をオンにする</Text>
+          <Text style={styles.permBtnText}>{t('settings.permCard.enableButton')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* 監視の ON/OFF */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>位置連動リマインド</Text>
+        <Text style={styles.cardTitle}>{t('settings.monitorCard.title')}</Text>
         <Text style={styles.cardDesc}>
-          オンにすると登録した場所に近づいたとき通知が届きます。バッテリー消費が増える場合があります。
+          {t('settings.monitorCard.description')}
         </Text>
         <TouchableOpacity
           style={[styles.monitorBtn, isMonitoring && styles.monitorBtnStop]}
           onPress={handleToggleMonitoring}>
           <Icon name={isMonitoring ? 'stop' : 'play-arrow'} size={20} color="#fff" />
           <Text style={styles.monitorBtnText}>
-            {isMonitoring ? 'リマインドを停止する' : 'リマインドを開始する'}
+            {isMonitoring ? t('settings.monitorCard.stopButton') : t('settings.monitorCard.startButton')}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* デフォルト半径 */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>デフォルト通知半径</Text>
+        <Text style={styles.cardTitle}>{t('settings.defaultRadius.title')}</Text>
         <Text style={styles.radiusValue}>{defaultRadius} m</Text>
         <Slider
           style={styles.slider}
@@ -222,8 +224,8 @@ export default function SettingsScreen(): React.JSX.Element {
 
       {/* 半径拡大オプション */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>通知半径の上限</Text>
-        <Text style={styles.infoText}>スライダーの上限値を選択してください</Text>
+        <Text style={styles.cardTitle}>{t('settings.maxRadius.title')}</Text>
+        <Text style={styles.infoText}>{t('settings.maxRadius.description')}</Text>
         <View style={styles.maxRadiusRow}>
           {[200, 400, 600, 800, 1000].map(val => (
             <TouchableOpacity
@@ -238,9 +240,9 @@ export default function SettingsScreen(): React.JSX.Element {
 
       {/* アプリ情報 */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>アプリ情報</Text>
-        <Text style={styles.infoText}>バージョン: 1.0.0</Text>
-        <Text style={styles.infoText}>ShoppingReminder</Text>
+        <Text style={styles.cardTitle}>{t('settings.appInfo.title')}</Text>
+        <Text style={styles.infoText}>{t('settings.appInfo.version')}</Text>
+        <Text style={styles.infoText}>{t('settings.appInfo.name')}</Text>
       </View>
       <AdBanner />
     </ScrollView>
@@ -333,3 +335,6 @@ const styles = StyleSheet.create({
   },
   infoText: { fontSize: 13, color: '#757575', marginBottom: 4 },
 });
+
+
+

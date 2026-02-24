@@ -10,6 +10,7 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { createNotificationChannel } from './src/services/notificationService';
 import { startGeofenceMonitoring } from './src/services/geofenceService';
 import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import './src/i18n'; // i18n 初期化
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';

@@ -22,6 +22,7 @@ import MapView, { Marker, Circle, LongPressEvent, PROVIDER_GOOGLE, Region } from
 import Geolocation from 'react-native-geolocation-service';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useTranslation } from 'react-i18next';
 import { useMemoStore } from '../store/memoStore';
 import { useSettingsStore } from '../store/memoStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -44,6 +45,7 @@ const FALLBACK_REGION: Region = {
 };
 
 export default function LocationPickerScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
   const insets = useSafeAreaInsets();
@@ -167,11 +169,11 @@ export default function LocationPickerScreen(): React.JSX.Element {
 
   const handleSave = () => {
     if (!picked) {
-      Alert.alert('場所を選択してください', '地図を長押しするか検索で場所を選んでください');
+      Alert.alert(t('locationPicker.alertNoLocation'), t('locationPicker.alertNoLocationMsg'));
       return;
     }
     if (!label.trim()) {
-      Alert.alert('名前を入力してください', 'この場所の名前 (例: スーパー) を入力してください');
+      Alert.alert(t('locationPicker.alertNoLabel'), t('locationPicker.alertNoLabelMsg'));
       return;
     }
 
@@ -188,7 +190,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
     } else {
       const result = addLocation(memoId, locationData);
       if (!result) {
-        Alert.alert('追加できません', '場所は最大3か所まで登録できます');
+        Alert.alert(t('locationPicker.alertMaxTitle'), t('locationPicker.alertMaxMsg'));
         return;
       }
     }
@@ -210,7 +212,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           showsMyLocationButton={true}>
           {picked && (
             <>
-              <Marker coordinate={picked} pinColor="#4CAF50" title="選択中" />
+              <Marker coordinate={picked} pinColor="#4CAF50" title={t('locationPicker.markerSelected')} />
               <Circle
                 center={picked}
                 radius={radius}
@@ -227,7 +229,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
                 coordinate={{ latitude: loc.latitude, longitude: loc.longitude }}
                 pinColor="#2196F3"
                 title={loc.label}
-                description="登録済み"
+                description={t('locationPicker.markerRegistered')}
               />
               <Circle
                 center={{ latitude: loc.latitude, longitude: loc.longitude }}
@@ -245,7 +247,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
         {/* ヒントバッジ */}
         <View style={styles.hintBadge}>
           <Icon name="touch-app" size={14} color="#757575" />
-          <Text style={styles.hintText}>地図を長押しでピン</Text>
+          <Text style={styles.hintText}>{t('locationPicker.hintLongPress')}</Text>
         </View>
 
         {/* 凡例（登録済み場所が1件以上ある場合のみ表示） */}
@@ -253,11 +255,11 @@ export default function LocationPickerScreen(): React.JSX.Element {
           <View style={styles.legendBadge}>
             <View style={styles.legendRow}>
               <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
-              <Text style={styles.legendText}>選択中</Text>
+              <Text style={styles.legendText}>{t('locationPicker.legendSelected')}</Text>
             </View>
             <View style={styles.legendRow}>
               <View style={[styles.legendDot, { backgroundColor: '#2196F3' }]} />
-              <Text style={styles.legendText}>登録済み</Text>
+              <Text style={styles.legendText}>{t('locationPicker.legendRegistered')}</Text>
             </View>
           </View>
         )}
@@ -267,19 +269,19 @@ export default function LocationPickerScreen(): React.JSX.Element {
       <View style={[styles.form, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         {/* 場所名 */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>場所の名前</Text>
+          <Text style={styles.inputLabel}>{t('locationPicker.labelInput')}</Text>
           <TextInput
             style={styles.input}
             value={label}
             onChangeText={setLabel}
-            placeholder="例: スーパー三和"
+            placeholder={t('locationPicker.labelPlaceholder')}
             placeholderTextColor="#BDBDBD"
           />
         </View>
 
         {/* 半径スライダー */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>通知半径: {radius}m</Text>
+          <Text style={styles.inputLabel}>{t('locationPicker.radiusLabel', { radius })}</Text>
           <Slider
             style={styles.slider}
             minimumValue={50}
@@ -309,7 +311,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
 
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
           <Icon name="check" size={20} color="#fff" />
-          <Text style={styles.saveBtnText}>この場所を保存</Text>
+          <Text style={styles.saveBtnText}>{t('locationPicker.saveButton')}</Text>
         </TouchableOpacity>
       </View>
     </View>

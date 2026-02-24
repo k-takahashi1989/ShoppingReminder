@@ -11,6 +11,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdBanner from '../components/AdBanner';
+import { useTranslation } from 'react-i18next';
 import { useMemoStore } from '../store/memoStore';
 import { clearMemoFromCache } from '../services/geofenceService';
 import { RootStackParamList, ShoppingItem, MemoLocation } from '../types';
@@ -19,6 +20,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'MemoDetail'>;
 
 export default function MemoDetailScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
   const { memoId } = route.params;
@@ -31,21 +33,21 @@ export default function MemoDetailScreen(): React.JSX.Element {
   if (!memo) {
     return (
       <View style={styles.center}>
-        <Text>メモが見つかりません</Text>
+        <Text>{t('memoDetail.notFound')}</Text>
       </View>
     );
   }
 
   const handleComplete = () => {
     Alert.alert(
-      memo.isCompleted ? '未完了に戻す' : 'メモを完了にする',
+      memo.isCompleted ? t('memoDetail.completeBtnDone') : t('memoDetail.completeBtnActive'),
       memo.isCompleted
-        ? 'このメモを未完了に戻しますか？'
-        : 'このメモを完了にしますか？場所のリマインドが停止されます。',
+        ? t('memoDetail.toggleMsgUndo')
+        : t('memoDetail.toggleMsgComplete'),
       [
-        { text: 'キャンセル', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '確定',
+          text: t('common.confirm'),
           onPress: () => {
             updateMemo(memoId, { isCompleted: !memo.isCompleted });
             if (!memo.isCompleted) clearMemoFromCache(memoId);
@@ -56,10 +58,10 @@ export default function MemoDetailScreen(): React.JSX.Element {
   };
 
   const handleDeleteLocation = (loc: MemoLocation) => {
-    Alert.alert('場所を削除', `「${loc.label}」を削除しますか？`, [
-      { text: 'キャンセル', style: 'cancel' },
+    Alert.alert(t('memoDetail.deleteLocTitle'), t('memoDetail.deleteLocMessage', { label: loc.label }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: '削除',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => deleteLocation(memoId, loc.id),
       },
@@ -98,20 +100,20 @@ export default function MemoDetailScreen(): React.JSX.Element {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            📍 場所 ({memo.locations.length} / 3)
+            {t('memoDetail.locationSection', { count: memo.locations.length })}
           </Text>
           {memo.locations.length < 3 && !memo.isCompleted && (
             <TouchableOpacity
               onPress={() => navigation.navigate('LocationPicker', { memoId })}
               style={styles.addLocBtn}>
               <Icon name="add-location" size={18} color="#4CAF50" />
-              <Text style={styles.addLocText}>追加</Text>
+              <Text style={styles.addLocText}>{t('memoDetail.addLocation')}</Text>
             </TouchableOpacity>
           )}
         </View>
         {memo.locations.length === 0 ? (
           <Text style={styles.noLocText}>
-            場所を追加するとそこに近づいたとき通知が来ます
+            {t('memoDetail.locationEmpty')}
           </Text>
         ) : (
           memo.locations.map(loc => (
@@ -121,7 +123,7 @@ export default function MemoDetailScreen(): React.JSX.Element {
                 {loc.address ? (
                   <Text style={styles.locChipAddress}>{loc.address}</Text>
                 ) : null}
-                <Text style={styles.locChipRadius}>半径 {loc.radius}m</Text>
+                <Text style={styles.locChipRadius}>{t('memoDetail.radiusLabel', { radius: loc.radius })}</Text>
               </View>
               <TouchableOpacity onPress={() => handleDeleteLocation(loc)}>
                 <Icon name="close" size={18} color="#9E9E9E" />
@@ -133,10 +135,10 @@ export default function MemoDetailScreen(): React.JSX.Element {
 
       {/* 買い物アイテムリスト */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🛒 買い物リスト</Text>
+        <Text style={styles.sectionTitle}>{t('memoDetail.itemSection')}</Text>
         {memo.items.length === 0 ? (
           <Text style={styles.noLocText}>
-            編集画面でアイテムを追加してください
+            {t('memoDetail.itemEmpty')}
           </Text>
         ) : (
           <FlatList
@@ -158,7 +160,7 @@ export default function MemoDetailScreen(): React.JSX.Element {
           color="#fff"
         />
         <Text style={styles.completeBtnText}>
-          {memo.isCompleted ? '未完了に戻す' : 'メモを完了にする'}
+          {memo.isCompleted ? t('memoDetail.completeBtnDone') : t('memoDetail.completeBtnActive')}
         </Text>
       </TouchableOpacity>
       <AdBanner />

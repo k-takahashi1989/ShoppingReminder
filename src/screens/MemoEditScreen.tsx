@@ -23,12 +23,14 @@ import { useMemoStore } from '../store/memoStore';
 import { useSettingsStore } from '../store/memoStore';
 import { useInterstitialAd } from '../hooks/useInterstitialAd';
 import { useShallow } from 'zustand/react/shallow';
+import { useTranslation } from 'react-i18next';
 import { RootStackParamList, ShoppingItem } from '../types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'MemoEdit'>;
 
 export default function MemoEditScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
   const memoId = route.params?.memoId;
@@ -72,7 +74,7 @@ export default function MemoEditScreen(): React.JSX.Element {
     if (!savedMemoId) {
       // メモ未保存なら先に保存する
       if (!title.trim()) {
-        Alert.alert('メモタイトルを入力してください', 'アイテムを追加する前にタイトルを入力してください');
+        Alert.alert(t('memoEdit.errorNeedTitleFirst'), t('memoEdit.errorNeedTitleFirstMsg'));
         return;
       }
       const memo = addMemo(title.trim());
@@ -156,19 +158,19 @@ export default function MemoEditScreen(): React.JSX.Element {
           }
         }}>
         {/* タイトル */}
-        <Text style={styles.label}>タイトル</Text>
+        <Text style={styles.label}>{t('memoEdit.titleLabel')}</Text>
         <TextInput
           style={styles.titleInput}
           value={title}
           onChangeText={setTitle}
-          placeholder="例: スーパーで買うもの"
+          placeholder={t('memoEdit.titlePlaceholder')}
           placeholderTextColor="#BDBDBD"
           onBlur={handleSaveTitle}
           returnKeyType="done"
         />
 
         {/* アイテム */}
-        <Text style={styles.label}>買い物アイテム</Text>
+        <Text style={styles.label}>{t('memoEdit.itemsLabel')}</Text>
         {currentItems.length > 0 && (
           <FlatList
             data={currentItems}
@@ -184,7 +186,7 @@ export default function MemoEditScreen(): React.JSX.Element {
             style={styles.addInput}
             value={newItemName}
             onChangeText={setNewItemName}
-            placeholder="+ アイテムを追加"
+            placeholder={t('memoEdit.addItemPlaceholder')}
             placeholderTextColor="#9E9E9E"
             onSubmitEditing={handleAddItem}
             returnKeyType="done"
@@ -202,7 +204,7 @@ export default function MemoEditScreen(): React.JSX.Element {
 
       {/* 完了 */}
       <TouchableOpacity style={[styles.doneBtn, { marginBottom: Math.max(insets.bottom, 16) }]} onPress={handleDone}>
-        <Text style={styles.doneBtnText}>完了</Text>
+        <Text style={styles.doneBtnText}>{t('memoEdit.doneButton')}</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );

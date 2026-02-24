@@ -10,6 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useMemoStore } from '../store/memoStore';
 import { Memo, RootStackParamList } from '../types';
@@ -18,6 +19,7 @@ import AdBanner from '../components/AdBanner';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function MemoListScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const navigation = useNavigation<Nav>();
   const memos = useMemoStore(s => s.memos);
   const deleteMemo = useMemoStore(s => s.deleteMemo);
@@ -25,10 +27,10 @@ export default function MemoListScreen(): React.JSX.Element {
 
   const handleDelete = useCallback(
     (memo: Memo) => {
-      Alert.alert('メモを削除', `「${memo.title}」を削除しますか？`, [
-        { text: 'キャンセル', style: 'cancel' },
+      Alert.alert(t('memoList.deleteTitle'), t('memoList.deleteMessage', { title: memo.title }), [
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '削除',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: () => deleteMemo(memo.id),
         },
@@ -51,7 +53,7 @@ export default function MemoListScreen(): React.JSX.Element {
             {item.isCompleted ? '✅ ' : ''}{item.title}
           </Text>
           <Text style={styles.cardSub}>
-            {total > 0 ? `${unchecked} / ${total} 点残り` : 'アイテムなし'}
+            {total > 0 ? t('memoList.itemsLeft', { unchecked, total }) : t('memoList.noItems')}
           </Text>
           {item.locations.length > 0 && (
             <Text style={styles.cardLoc}>
@@ -79,7 +81,7 @@ export default function MemoListScreen(): React.JSX.Element {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <Text style={styles.headerTitle}>買い物リスト</Text>
+        <Text style={styles.headerTitle}>{t('memoList.headerTitle')}</Text>
         <TouchableOpacity
           style={styles.addBtn}
           onPress={() => navigation.navigate('MemoEdit', {})}>
@@ -90,8 +92,8 @@ export default function MemoListScreen(): React.JSX.Element {
       {memos.length === 0 ? (
         <View style={styles.empty}>
           <Icon name="shopping-cart" size={64} color="#E0E0E0" />
-          <Text style={styles.emptyText}>メモがありません</Text>
-          <Text style={styles.emptySubText}>右上の + ボタンで追加しましょう</Text>
+          <Text style={styles.emptyText}>{t('memoList.emptyText')}</Text>
+          <Text style={styles.emptySubText}>{t('memoList.emptySubText')}</Text>
         </View>
       ) : (
         <FlatList

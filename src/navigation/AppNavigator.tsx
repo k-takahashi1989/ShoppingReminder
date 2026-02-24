@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useInterstitialAd } from '../hooks/useInterstitialAd';
 import { useSettingsStore } from '../store/memoStore';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList, MainTabParamList } from '../types';
 import MemoListScreen from '../screens/MemoListScreen';
@@ -17,6 +18,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function MainTabs(): React.JSX.Element {
+  const { t } = useTranslation();
   const { showIfReady } = useInterstitialAd();
   const totalMemoRegistrations = useSettingsStore(s => s.totalMemoRegistrations);
 
@@ -31,7 +33,7 @@ function MainTabs(): React.JSX.Element {
         name="MemoList"
         component={MemoListScreen}
         options={{
-          tabBarLabel: 'リスト',
+          tabBarLabel: t('nav.tabList'),
           tabBarIcon: ({ color, size }) => (
             <Icon name="shopping-cart" color={color} size={size} />
           ),
@@ -48,7 +50,7 @@ function MainTabs(): React.JSX.Element {
           },
         }}
         options={{
-          tabBarLabel: '設定',
+          tabBarLabel: t('nav.tabSettings'),
           tabBarIcon: ({ color, size }) => (
             <Icon name="settings" color={color} size={size} />
           ),
@@ -59,12 +61,13 @@ function MainTabs(): React.JSX.Element {
 }
 
 export function AppNavigator(): React.JSX.Element {
+  const { t } = useTranslation();
   return (
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
           headerTintColor: '#4CAF50',
-          headerBackTitle: '戻る',
+          headerBackTitle: t('nav.backButton'),
         }}>
         <Stack.Screen
           name="MainTabs"
@@ -74,19 +77,19 @@ export function AppNavigator(): React.JSX.Element {
         <Stack.Screen
           name="MemoDetail"
           component={MemoDetailScreen}
-          options={{ title: 'メモ詳細' }}
+          options={{ title: t('nav.memoDetail') }}
         />
         <Stack.Screen
           name="MemoEdit"
           component={MemoEditScreen}
           options={({ route }) => ({
-            title: route.params?.memoId ? 'メモを編集' : '新しいメモ',
+            title: route.params?.memoId ? t('nav.memoEditExisting') : t('nav.memoEditNew'),
           })}
         />
         <Stack.Screen
           name="LocationPicker"
           component={LocationPickerScreen}
-          options={{ title: '場所を選択' }}
+          options={{ title: t('nav.locationPicker') }}
         />
       </Stack.Navigator>
     </NavigationContainer>
