@@ -10,8 +10,10 @@ import { generateId } from '../utils/helpers';
 interface SettingsState {
   defaultRadius: number;               // デフォルトのジオフェンス半径 (m)
   maxRadius: number;                   // スライダー最大値 (300 or 1000)
+  totalMemoRegistrations: number;      // 新規メモ登録累計（広告表示判定用）
   setDefaultRadius: (radius: number) => void;
   setMaxRadius: (max: number) => void;
+  incrementMemoRegistrations: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -19,7 +21,10 @@ export const useSettingsStore = create<SettingsState>()(
     set => ({
       defaultRadius: 200,
       maxRadius: 400,
+      totalMemoRegistrations: 0,
       setDefaultRadius: (radius: number) => set({ defaultRadius: radius }),
+      incrementMemoRegistrations: () =>
+        set(state => ({ totalMemoRegistrations: state.totalMemoRegistrations + 1 })),
       setMaxRadius: (max: number) => set(state => ({
         maxRadius: max,
         // デフォルト半径が新しい上限を超えている場合は切り詰め

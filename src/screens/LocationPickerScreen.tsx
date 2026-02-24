@@ -17,10 +17,10 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Circle, LongPressEvent, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+// GooglePlacesAutocomplete は将来再有効化
+// import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Geolocation from 'react-native-geolocation-service';
 import Slider from '@react-native-community/slider';
-import Config from 'react-native-config';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useMemoStore } from '../store/memoStore';
 import { useSettingsStore } from '../store/memoStore';
@@ -66,10 +66,42 @@ export default function LocationPickerScreen(): React.JSX.Element {
   const [picked, setPicked] = useState<PickedLocation | null>(null);
   const [label, setLabel] = useState('');
   const [radius, setRadius] = useState(defaultRadius);
+  const [address, setAddress] = useState<string | null>(null);
   const [initialRegion, setInitialRegion] = useState<Region>(FALLBACK_REGION);
 
   const mapRef = useRef<MapView>(null);
-  const placesRef = useRef<any>(null);
+
+  // 逆ジオコーディングで住所（町名まで）を取得 - OpenStreetMap Nominatim使用（APIキー不要）
+  const reverseGeocode = async (lat: number, lng: number) => {
+    setAddress(null);
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ja&zoom=16`;
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'ShoppingReminderApp/1.0' },
+      });
+      const json = await res.json();
+      if (json && json.address) {
+        const a = json.address as Record<string, string>;
+        // 都道府県: state（東京都等） または province（大阪府等）
+        const pref  = a.state ?? a.province ?? '';
+        // 市区 / 町 / 村
+        const city  = a.city ?? a.town ?? a.village ?? '';
+        // 区・郡など
+        const ward  = a.suburb ?? '';
+        // 丁目・町名
+        const area  = a.quarter ?? a.neighbourhood ?? '';
+        const parts  = [pref, city, ward, area].filter(Boolean);
+        // 重複除去
+        const unique = parts.filter((v, i) => parts.indexOf(v) === i);
+        const formatted = unique.join('');
+        if (formatted) {
+          setAddress(formatted);
+        }
+      }
+    } catch {
+      // 住所取得失敗は無視
+    }
+  };
 
   // 起動時に現在地を取得して地図の中心にセット
   useEffect(() => {
@@ -100,6 +132,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
     if (!existing) return;
     setLabel(existing.label);
     setRadius(existing.radius);
+    if (existing.address) setAddress(existing.address);
     const coords = { latitude: existing.latitude, longitude: existing.longitude };
     setPicked(coords);
     const region: Region = { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 };
@@ -109,25 +142,28 @@ export default function LocationPickerScreen(): React.JSX.Element {
   }, []);
 
   const handleMapPress = (e: LongPressEvent) => {
-    setPicked(e.nativeEvent.coordinate);
+    const coord = e.nativeEvent.coordinate;
+    setPicked(coord);
     Keyboard.dismiss();
+    reverseGeocode(coord.latitude, coord.longitude);
   };
 
-  const handlePlaceSelected = (data: any, details: any) => {
-    if (!details?.geometry?.location) return;
-    const { lat, lng } = details.geometry.location;
-    const coords = { latitude: lat, longitude: lng };
-    setPicked(coords);
-    if (!label && details.name) setLabel(details.name);
-    Keyboard.dismiss();
-    // 選択した場所へ地図を移動
-    setTimeout(() => {
-      mapRef.current?.animateToRegion(
-        { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-        400,
-      );
-    }, 100);
-  };
+  // 将来の有料プランで地名検索を導入する際に再有効化
+  // const handlePlaceSelected = (data: any, details: any) => {
+  //   if (!details?.geometry?.location) return;
+  //   const { lat, lng } = details.geometry.location;
+  //   const coords = { latitude: lat, longitude: lng };
+  //   setPicked(coords);
+  //   if (!label && details.name) setLabel(details.name);
+  //   Keyboard.dismiss();
+  //   reverseGeocode(lat, lng);
+  //   setTimeout(() => {
+  //     mapRef.current?.animateToRegion(
+  //       { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+  //       400,
+  //     );
+  //   }, 100);
+  // };
 
   const handleSave = () => {
     if (!picked) {
@@ -144,6 +180,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
       latitude: picked.latitude,
       longitude: picked.longitude,
       radius,
+      ...(address ? { address } : {}),
     };
 
     if (existingLocationId) {
@@ -203,29 +240,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           ))}
         </MapView>
 
-        {/* 検索バー（地図上にオーバーレイ） */}
-        <View style={styles.searchOverlay}>
-          <GooglePlacesAutocomplete
-            ref={placesRef}
-            placeholder="店名や住所で検索..."
-            onPress={handlePlaceSelected}
-            onFail={err => console.warn('Places API error:', err)}
-            fetchDetails={true}
-            query={{
-              key: Config.GOOGLE_PLACES_API_KEY,
-              language: 'ja',
-              components: 'country:jp',
-            }}
-            styles={{
-              textInputContainer: styles.searchInputContainer,
-              textInput: styles.searchInput,
-              listView: styles.searchList,
-              row: styles.searchRow,
-              description: styles.searchDesc,
-            }}
-            enablePoweredByContainer={false}
-          />
-        </View>
+        {/* 検索バーは将来のアップデートで有効化予定 */}
 
         {/* ヒントバッジ */}
         <View style={styles.hintBadge}>
@@ -269,7 +284,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
             style={styles.slider}
             minimumValue={50}
             maximumValue={maxRadius}
-            step={50}
+            step={1}
             value={radius}
             onValueChange={val => setRadius(val)}
             minimumTrackTintColor="#4CAF50"
@@ -287,7 +302,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           <View style={styles.pickedBadge}>
             <Icon name="check-circle" size={14} color="#4CAF50" />
             <Text style={styles.pickedBadgeText}>
-              {picked.latitude.toFixed(5)}, {picked.longitude.toFixed(5)}
+              {address ?? `${picked.latitude.toFixed(5)}, ${picked.longitude.toFixed(5)}`}
             </Text>
           </View>
         )}
@@ -307,39 +322,6 @@ const styles = StyleSheet.create({
   /* 地図 */
   mapContainer: { flex: 1, position: 'relative' },
   map: { flex: 1 },
-
-  /* 検索オーバーレイ */
-  searchOverlay: {
-    position: 'absolute',
-    top: 8,
-    left: 12,
-    right: 12,
-    zIndex: 10,
-  },
-  searchInputContainer: {
-    backgroundColor: 'transparent',
-  },
-  searchInput: {
-    fontSize: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    height: 48,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    color: '#212121',
-  },
-  searchList: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginTop: 4,
-    elevation: 5,
-  },
-  searchRow: { padding: 14 },
-  searchDesc: { fontSize: 14, color: '#212121' },
 
   /* ヒントバッジ */
   hintBadge: {

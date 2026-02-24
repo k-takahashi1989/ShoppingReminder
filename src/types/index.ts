@@ -14,6 +14,7 @@ export interface MemoLocation {
   latitude: number;
   longitude: number;
   radius: number;       // ジオフェンス半径 (メートル)
+  address?: string;     // 逆ジオコーディングで取得した住所 (町名まで)
 }
 
 export interface Memo {

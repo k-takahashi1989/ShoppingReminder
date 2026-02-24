@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useMemoStore } from '../store/memoStore';
 import { Memo, RootStackParamList } from '../types';
+import AdBanner from '../components/AdBanner';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -100,6 +101,7 @@ export default function MemoListScreen(): React.JSX.Element {
           contentContainerStyle={styles.list}
         />
       )}
+      <AdBanner />
     </View>
   );
 }

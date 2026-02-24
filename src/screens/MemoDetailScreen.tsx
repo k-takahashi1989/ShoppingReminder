@@ -10,6 +10,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import AdBanner from '../components/AdBanner';
 import { useMemoStore } from '../store/memoStore';
 import { clearMemoFromCache } from '../services/geofenceService';
 import { RootStackParamList, ShoppingItem, MemoLocation } from '../types';
@@ -117,6 +118,9 @@ export default function MemoDetailScreen(): React.JSX.Element {
             <View key={loc.id} style={styles.locChip}>
               <View style={styles.locChipBody}>
                 <Text style={styles.locChipLabel}>{loc.label}</Text>
+                {loc.address ? (
+                  <Text style={styles.locChipAddress}>{loc.address}</Text>
+                ) : null}
                 <Text style={styles.locChipRadius}>半径 {loc.radius}m</Text>
               </View>
               <TouchableOpacity onPress={() => handleDeleteLocation(loc)}>
@@ -157,6 +161,7 @@ export default function MemoDetailScreen(): React.JSX.Element {
           {memo.isCompleted ? '未完了に戻す' : 'メモを完了にする'}
         </Text>
       </TouchableOpacity>
+      <AdBanner />
     </View>
   );
 }
@@ -198,6 +203,7 @@ const styles = StyleSheet.create({
   },
   locChipBody: { flex: 1 },
   locChipLabel: { fontSize: 14, fontWeight: '600', color: '#2E7D32' },
+  locChipAddress: { fontSize: 12, color: '#616161', marginTop: 2 },
   locChipRadius: { fontSize: 12, color: '#4CAF50', marginTop: 2 },
   itemRow: {
     flexDirection: 'row',

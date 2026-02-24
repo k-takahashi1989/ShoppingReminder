@@ -18,6 +18,7 @@ import {
 } from 'react-native-permissions';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import AdBanner from '../components/AdBanner';
 import { useSettingsStore } from '../store/memoStore';
 import {
   startGeofenceMonitoring,
@@ -120,7 +121,7 @@ export default function SettingsScreen(): React.JSX.Element {
       setIsMonitoring(false);
     } else {
       if (perms.fine !== 'granted') {
-        Alert.alert('位置情報の許可が必要です', '先に権限を付与してください');
+        Alert.alert('位置情報の許可が必要です', '先に位置情報を許可してください');
         return;
       }
       await startGeofenceMonitoring();
@@ -136,8 +137,8 @@ export default function SettingsScreen(): React.JSX.Element {
 
   const statusText = (s: PermStatus) => {
     switch (s) {
-      case 'granted': return '許可済み';
-      case 'denied': return '未許可';
+      case 'granted': return 'オン';
+      case 'denied': return 'オフ';
       case 'blocked': return 'ブロック中';
       case 'unavailable': return '利用不可';
       default: return '確認中...';
@@ -178,13 +179,13 @@ export default function SettingsScreen(): React.JSX.Element {
 
         <TouchableOpacity style={styles.permBtn} onPress={handleRequestPerms}>
           <Icon name="lock-open" size={18} color="#fff" />
-          <Text style={styles.permBtnText}>権限を申請する</Text>
+          <Text style={styles.permBtnText}>位置情報・通知をオンにする</Text>
         </TouchableOpacity>
       </View>
 
       {/* 監視の ON/OFF */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>ジオフェンス監視</Text>
+        <Text style={styles.cardTitle}>位置連動リマインド</Text>
         <Text style={styles.cardDesc}>
           オンにすると登録した場所に近づいたとき通知が届きます。バッテリー消費が増える場合があります。
         </Text>
@@ -193,7 +194,7 @@ export default function SettingsScreen(): React.JSX.Element {
           onPress={handleToggleMonitoring}>
           <Icon name={isMonitoring ? 'stop' : 'play-arrow'} size={20} color="#fff" />
           <Text style={styles.monitorBtnText}>
-            {isMonitoring ? '監視を停止' : '監視を開始'}
+            {isMonitoring ? 'リマインドを停止する' : 'リマインドを開始する'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -241,6 +242,7 @@ export default function SettingsScreen(): React.JSX.Element {
         <Text style={styles.infoText}>バージョン: 1.0.0</Text>
         <Text style={styles.infoText}>ShoppingReminder</Text>
       </View>
+      <AdBanner />
     </ScrollView>
   );
 }

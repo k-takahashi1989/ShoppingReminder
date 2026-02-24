@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useInterstitialAd } from '../hooks/useInterstitialAd';
+import { useSettingsStore } from '../store/memoStore';
 
 import { RootStackParamList, MainTabParamList } from '../types';
 import MemoListScreen from '../screens/MemoListScreen';
@@ -15,6 +17,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function MainTabs(): React.JSX.Element {
+  const { showIfReady } = useInterstitialAd();
+  const totalMemoRegistrations = useSettingsStore(s => s.totalMemoRegistrations);
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -35,6 +40,13 @@ function MainTabs(): React.JSX.Element {
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}
+        listeners={{
+          tabPress: () => {
+            if (totalMemoRegistrations >= 5) {
+              showIfReady();
+            }
+          },
+        }}
         options={{
           tabBarLabel: '設定',
           tabBarIcon: ({ color, size }) => (
