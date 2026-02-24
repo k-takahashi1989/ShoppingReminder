@@ -130,6 +130,7 @@ export async function startGeofenceMonitoring(): Promise<void> {
       type: 'drawable',
     },
     color: '#4CAF50',
+    linkingURI: 'shoppingreminder://open',
     parameters: {},
   });
 }
