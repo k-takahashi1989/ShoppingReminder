@@ -124,7 +124,7 @@ export async function startGeofenceMonitoring(): Promise<void> {
   await BackgroundService.start(backgroundTask, {
     taskName: 'ShoppingReminderGeofence',
     taskTitle: 'ショッピングリマインダー',
-    taskDesc: '近くの店を監視中...',
+    taskDesc: '登録した場所に近づくとお知らせします',
     taskIcon: {
       name: 'ic_notification',
       type: 'drawable',

@@ -78,8 +78,8 @@ const ja = {
     screenTitle: '⚙️ 設定',
     permCard: {
       title: '通知・位置情報の権限',
-      foreground: '位置情報 (前景)',
-      background: '位置情報 (バックグラウンド)',
+      foreground: '現在地の取得',
+      background: '位置情報（常に許可）',
       notification: 'プッシュ通知',
       enableButton: '位置情報・通知をオンにする',
       grantedButton: '✅ 許可済み',

@@ -74,8 +74,8 @@ const en: Translation = {
     screenTitle: '⚙️ Settings',
     permCard: {
       title: 'Permissions',
-      foreground: 'Location (foreground)',
-      background: 'Location (background)',
+      foreground: 'Location access',
+      background: 'Location (always on)',
       notification: 'Push notifications',
       enableButton: 'Enable location & notifications',
       grantedButton: '✅ Permissions granted',
