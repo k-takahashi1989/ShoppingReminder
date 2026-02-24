@@ -84,6 +84,24 @@ export default function SettingsScreen(): React.JSX.Element {
   }, []);
 
   const handleRequestPerms = async () => {
+    // 現在の状態を確認
+    const current = await checkLocationPermissions();
+    setPerms(current);
+    const needsBg = androidVersion >= 29;
+    const needsNotif = androidVersion >= 33;
+    const allAlreadyGranted =
+      current.fine === 'granted' &&
+      (!needsBg || current.background === 'granted') &&
+      (!needsNotif || current.notification === 'granted');
+
+    if (allAlreadyGranted) {
+      Alert.alert(
+        t('settings.alertPermsAlreadyGranted.title'),
+        t('settings.alertPermsAlreadyGranted.message'),
+      );
+      return;
+    }
+
     // 1. 前景位置情報
     const fineResult = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
     if (fineResult !== RESULTS.GRANTED) {
@@ -100,7 +118,7 @@ export default function SettingsScreen(): React.JSX.Element {
     }
 
     // 2. バックグラウンド位置情報
-    if (androidVersion >= 29) {
+    if (needsBg) {
       const bgResult = await request(PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION);
       if (bgResult !== RESULTS.GRANTED) {
         Alert.alert(
@@ -111,17 +129,31 @@ export default function SettingsScreen(): React.JSX.Element {
             { text: t('settings.alertFineLocation.openSettings'), onPress: () => openSettings() },
           ],
         );
+        await refreshPerms();
+        return;
       }
     }
 
     // 3. 通知 (Android 13+)
-    if (androidVersion >= 33) {
+    if (needsNotif) {
       await PermissionsAndroid.request(
         'android.permission.POST_NOTIFICATIONS' as any,
       );
     }
 
-    await refreshPerms();
+    // 結果確認
+    const updated = await checkLocationPermissions();
+    setPerms(updated);
+    const nowGranted =
+      updated.fine === 'granted' &&
+      (!needsBg || updated.background === 'granted') &&
+      (!needsNotif || updated.notification === 'granted');
+    if (nowGranted) {
+      Alert.alert(
+        t('settings.alertPermsSuccess.title'),
+        t('settings.alertPermsSuccess.message'),
+      );
+    }
   };
 
   const handleToggleMonitoring = async () => {
@@ -153,6 +185,11 @@ export default function SettingsScreen(): React.JSX.Element {
       default: return t('settings.status.checking');
     }
   };
+
+  const allGranted =
+    perms.fine === 'granted' &&
+    (androidVersion < 29 || perms.background === 'granted') &&
+    (androidVersion < 33 || perms.notification === 'granted');
 
   return (
     <ScrollView style={styles.container}>
@@ -186,9 +223,13 @@ export default function SettingsScreen(): React.JSX.Element {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.permBtn} onPress={handleRequestPerms}>
-          <Icon name="lock-open" size={18} color="#fff" />
-          <Text style={styles.permBtnText}>{t('settings.permCard.enableButton')}</Text>
+        <TouchableOpacity
+          style={[styles.permBtn, allGranted && styles.permBtnGranted]}
+          onPress={handleRequestPerms}>
+          <Icon name={allGranted ? 'check-circle' : 'lock-open'} size={18} color="#fff" />
+          <Text style={styles.permBtnText}>
+            {allGranted ? t('settings.permCard.grantedButton') : t('settings.permCard.enableButton')}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -307,6 +348,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   permBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  permBtnGranted: { backgroundColor: '#757575' },
   monitorBtn: {
     flexDirection: 'row',
     alignItems: 'center',

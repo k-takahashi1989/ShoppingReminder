@@ -78,6 +78,7 @@ const en: Translation = {
       background: 'Location (background)',
       notification: 'Push notifications',
       enableButton: 'Enable location & notifications',
+      grantedButton: '✅ Permissions granted',
     },
     status: {
       on: 'On',
@@ -118,6 +119,14 @@ const en: Translation = {
     alertMonitor: {
       title: 'Location permission required',
       message: 'Please enable location permission first',
+    },
+    alertPermsAlreadyGranted: {
+      title: '✅ Already enabled',
+      message: 'Location and notification permissions are already granted.',
+    },
+    alertPermsSuccess: {
+      title: '✅ Setup complete',
+      message: 'Location and notifications are now enabled. You can start reminders.',
     },
     langCard: {
       title: 'Language',

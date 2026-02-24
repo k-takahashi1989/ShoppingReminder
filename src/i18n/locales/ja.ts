@@ -82,6 +82,7 @@ const ja = {
       background: '位置情報 (バックグラウンド)',
       notification: 'プッシュ通知',
       enableButton: '位置情報・通知をオンにする',
+      grantedButton: '✅ 許可済み',
     },
     status: {
       on: 'オン',
@@ -123,6 +124,14 @@ const ja = {
     alertMonitor: {
       title: '位置情報の許可が必要です',
       message: '先に位置情報を許可してください',
+    },
+    alertPermsAlreadyGranted: {
+      title: '✅ すでに設定済みです',
+      message: '位置情報と通知の許可はすでに有効になっています。',
+    },
+    alertPermsSuccess: {
+      title: '✅ 設定が完了しました',
+      message: '位置情報と通知が有効になりました。リマインドを開始できます。',
     },
     langCard: {
       title: '表示言語',
