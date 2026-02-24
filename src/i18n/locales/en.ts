@@ -119,6 +119,9 @@ const en: Translation = {
       title: 'Location permission required',
       message: 'Please enable location permission first',
     },
+    langCard: {
+      title: 'Language',
+    },
   },
 
   nav: {

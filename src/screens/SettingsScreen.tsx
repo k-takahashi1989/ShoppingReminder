@@ -20,6 +20,7 @@ import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdBanner from '../components/AdBanner';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useSettingsStore } from '../store/memoStore';
 import {
   startGeofenceMonitoring,
@@ -66,6 +67,12 @@ export default function SettingsScreen(): React.JSX.Element {
   }>({ fine: 'unknown', background: 'unknown', notification: 'unknown' });
 
   const [isMonitoring, setIsMonitoring] = useState(BackgroundService.isRunning());
+  const [currentLang, setCurrentLang] = useState(i18n.language);
+
+  const handleChangeLang = (lang: string) => {
+    i18n.changeLanguage(lang);
+    setCurrentLang(lang);
+  };
 
   const refreshPerms = async () => {
     const p = await checkLocationPermissions();
@@ -238,6 +245,23 @@ export default function SettingsScreen(): React.JSX.Element {
         </View>
       </View>
 
+      {/* 表示言語 */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>{t('settings.langCard.title')}</Text>
+        <View style={styles.langRow}>
+          <TouchableOpacity
+            style={[styles.langBtn, currentLang === 'ja' && styles.langBtnActive]}
+            onPress={() => handleChangeLang('ja')}>
+            <Text style={[styles.langBtnText, currentLang === 'ja' && styles.langBtnTextActive]}>🇯🇵 日本語</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.langBtn, currentLang === 'en' && styles.langBtnActive]}
+            onPress={() => handleChangeLang('en')}>
+            <Text style={[styles.langBtnText, currentLang === 'en' && styles.langBtnTextActive]}>🇺🇸 English</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* アプリ情報 */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('settings.appInfo.title')}</Text>
@@ -334,6 +358,31 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
   },
   infoText: { fontSize: 13, color: '#757575', marginBottom: 4 },
+  langRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  langBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  langBtnActive: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#E8F5E9',
+  },
+  langBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9E9E9E',
+  },
+  langBtnTextActive: {
+    color: '#4CAF50',
+  },
 });
 
 
