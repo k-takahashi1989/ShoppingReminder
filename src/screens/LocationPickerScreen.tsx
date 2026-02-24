@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {
   useNavigation,
@@ -14,26 +15,28 @@ import {
   RouteProp,
 } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import MapView, { Marker, Circle, LongPressEvent } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MapView, { Marker, Circle, LongPressEvent, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import Geolocation from 'react-native-geolocation-service';
+import Slider from '@react-native-community/slider';
 import Config from 'react-native-config';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useMemoStore } from '../store/memoStore';
 import { useSettingsStore } from '../store/memoStore';
+import { useShallow } from 'zustand/react/shallow';
 import { RootStackParamList } from '../types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'LocationPicker'>;
-
-type Tab = 'map' | 'search';
 
 interface PickedLocation {
   latitude: number;
   longitude: number;
 }
 
-// 日本のデフォルト中心 (東京)
-const DEFAULT_REGION = {
+// フォールバック（現在地が取得できない場合）
+const FALLBACK_REGION: Region = {
   latitude: 35.6812,
   longitude: 139.7671,
   latitudeDelta: 0.05,
@@ -43,21 +46,71 @@ const DEFAULT_REGION = {
 export default function LocationPickerScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
+  const insets = useSafeAreaInsets();
   const { memoId, existingLocationId } = route.params;
 
   const addLocation = useMemoStore(s => s.addLocation);
   const updateLocation = useMemoStore(s => s.updateLocation);
   const defaultRadius = useSettingsStore(s => s.defaultRadius);
+  const maxRadius = useSettingsStore(s => s.maxRadius);
 
-  const [activeTab, setActiveTab] = useState<Tab>('search');
+  // 同一メモの登録済み場所（編集中の場所自体は除外）
+  const otherLocations = useMemoStore(
+    useShallow(s =>
+      (s.memos.find(m => m.id === memoId)?.locations ?? []).filter(
+        loc => loc.id !== existingLocationId,
+      ),
+    ),
+  );
+
   const [picked, setPicked] = useState<PickedLocation | null>(null);
   const [label, setLabel] = useState('');
-  const [radius, setRadius] = useState(String(defaultRadius));
+  const [radius, setRadius] = useState(defaultRadius);
+  const [initialRegion, setInitialRegion] = useState<Region>(FALLBACK_REGION);
 
   const mapRef = useRef<MapView>(null);
+  const placesRef = useRef<any>(null);
+
+  // 起動時に現在地を取得して地図の中心にセット
+  useEffect(() => {
+    Geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        const region: Region = {
+          latitude,
+          longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        };
+        setInitialRegion(region);
+        mapRef.current?.animateToRegion(region, 500);
+      },
+      _error => {
+        // 位置情報が取得できない場合はフォールバック（東京）を使用
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  }, []);
+
+  // 既存場所の編集時はフォームに初期値をセット
+  useEffect(() => {
+    if (!existingLocationId) return;
+    const memo = useMemoStore.getState().memos.find(m => m.id === memoId);
+    const existing = memo?.locations.find(l => l.id === existingLocationId);
+    if (!existing) return;
+    setLabel(existing.label);
+    setRadius(existing.radius);
+    const coords = { latitude: existing.latitude, longitude: existing.longitude };
+    setPicked(coords);
+    const region: Region = { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 };
+    setInitialRegion(region);
+    setTimeout(() => mapRef.current?.animateToRegion(region, 400), 300);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleMapPress = (e: LongPressEvent) => {
     setPicked(e.nativeEvent.coordinate);
+    Keyboard.dismiss();
   };
 
   const handlePlaceSelected = (data: any, details: any) => {
@@ -66,11 +119,11 @@ export default function LocationPickerScreen(): React.JSX.Element {
     const coords = { latitude: lat, longitude: lng };
     setPicked(coords);
     if (!label && details.name) setLabel(details.name);
-    // 地図タブに切り替えて選択地点を表示
-    setActiveTab('map');
+    Keyboard.dismiss();
+    // 選択した場所へ地図を移動
     setTimeout(() => {
       mapRef.current?.animateToRegion(
-        { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+        { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
         400,
       );
     }, 100);
@@ -78,16 +131,11 @@ export default function LocationPickerScreen(): React.JSX.Element {
 
   const handleSave = () => {
     if (!picked) {
-      Alert.alert('場所を選択してください', '地図をタップするか検索で場所を選んでください');
+      Alert.alert('場所を選択してください', '地図を長押しするか検索で場所を選んでください');
       return;
     }
     if (!label.trim()) {
       Alert.alert('名前を入力してください', 'この場所の名前 (例: スーパー) を入力してください');
-      return;
-    }
-    const radiusNum = parseInt(radius, 10);
-    if (isNaN(radiusNum) || radiusNum < 50 || radiusNum > 5000) {
-      Alert.alert('半径エラー', '半径は 50〜5000m の範囲で入力してください');
       return;
     }
 
@@ -95,7 +143,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
       label: label.trim(),
       latitude: picked.latitude,
       longitude: picked.longitude,
-      radius: radiusNum,
+      radius,
     };
 
     if (existingLocationId) {
@@ -111,36 +159,57 @@ export default function LocationPickerScreen(): React.JSX.Element {
     navigation.goBack();
   };
 
-  const radiusNum = parseInt(radius, 10) || defaultRadius;
-
   return (
     <View style={styles.container}>
-      {/* タブ */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'search' && styles.tabActive]}
-          onPress={() => setActiveTab('search')}>
-          <Icon name="search" size={18} color={activeTab === 'search' ? '#4CAF50' : '#9E9E9E'} />
-          <Text style={[styles.tabText, activeTab === 'search' && styles.tabTextActive]}>
-            検索
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'map' && styles.tabActive]}
-          onPress={() => setActiveTab('map')}>
-          <Icon name="map" size={18} color={activeTab === 'map' ? '#4CAF50' : '#9E9E9E'} />
-          <Text style={[styles.tabText, activeTab === 'map' && styles.tabTextActive]}>
-            地図
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* 地図 + 上部に検索バーをオーバーレイ */}
+      <View style={styles.mapContainer}>
+        <MapView
+          ref={mapRef}
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          initialRegion={initialRegion}
+          onLongPress={handleMapPress}
+          showsUserLocation={true}
+          showsMyLocationButton={true}>
+          {picked && (
+            <>
+              <Marker coordinate={picked} pinColor="#4CAF50" title="選択中" />
+              <Circle
+                center={picked}
+                radius={radius}
+                fillColor="rgba(76, 175, 80, 0.15)"
+                strokeColor="rgba(76, 175, 80, 0.6)"
+                strokeWidth={2}
+              />
+            </>
+          )}
+          {/* 登録済みの場所（青で表示） */}
+          {otherLocations.map(loc => (
+            <React.Fragment key={loc.id}>
+              <Marker
+                coordinate={{ latitude: loc.latitude, longitude: loc.longitude }}
+                pinColor="#2196F3"
+                title={loc.label}
+                description="登録済み"
+              />
+              <Circle
+                center={{ latitude: loc.latitude, longitude: loc.longitude }}
+                radius={loc.radius}
+                fillColor="rgba(33, 150, 243, 0.12)"
+                strokeColor="rgba(33, 150, 243, 0.5)"
+                strokeWidth={2}
+              />
+            </React.Fragment>
+          ))}
+        </MapView>
 
-      {/* 検索タブ */}
-      {activeTab === 'search' && (
-        <View style={styles.searchContainer}>
+        {/* 検索バー（地図上にオーバーレイ） */}
+        <View style={styles.searchOverlay}>
           <GooglePlacesAutocomplete
+            ref={placesRef}
             placeholder="店名や住所で検索..."
             onPress={handlePlaceSelected}
+            onFail={err => console.warn('Places API error:', err)}
             fetchDetails={true}
             query={{
               key: Config.GOOGLE_PLACES_API_KEY,
@@ -148,6 +217,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
               components: 'country:jp',
             }}
             styles={{
+              textInputContainer: styles.searchInputContainer,
               textInput: styles.searchInput,
               listView: styles.searchList,
               row: styles.searchRow,
@@ -155,73 +225,72 @@ export default function LocationPickerScreen(): React.JSX.Element {
             }}
             enablePoweredByContainer={false}
           />
-          {picked && (
-            <View style={styles.pickedBadge}>
-              <Icon name="check-circle" size={16} color="#4CAF50" />
-              <Text style={styles.pickedBadgeText}>
-                場所を選択しました ({picked.latitude.toFixed(5)}, {picked.longitude.toFixed(5)})
-              </Text>
+        </View>
+
+        {/* ヒントバッジ */}
+        <View style={styles.hintBadge}>
+          <Icon name="touch-app" size={14} color="#757575" />
+          <Text style={styles.hintText}>地図を長押しでピン</Text>
+        </View>
+
+        {/* 凡例（登録済み場所が1件以上ある場合のみ表示） */}
+        {otherLocations.length > 0 && (
+          <View style={styles.legendBadge}>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
+              <Text style={styles.legendText}>選択中</Text>
             </View>
-          )}
-        </View>
-      )}
-
-      {/* 地図タブ */}
-      {activeTab === 'map' && (
-        <View style={styles.mapContainer}>
-          <Text style={styles.mapHint}>地図を長押しして場所を選択</Text>
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            initialRegion={
-              picked
-                ? { ...picked, latitudeDelta: 0.01, longitudeDelta: 0.01 }
-                : DEFAULT_REGION
-            }
-            onLongPress={handleMapPress}
-            showsUserLocation={true}
-            showsMyLocationButton={true}>
-            {picked && (
-              <>
-                <Marker coordinate={picked} pinColor="#4CAF50" />
-                <Circle
-                  center={picked}
-                  radius={isNaN(radiusNum) ? defaultRadius : radiusNum}
-                  fillColor="rgba(76, 175, 80, 0.15)"
-                  strokeColor="rgba(76, 175, 80, 0.6)"
-                  strokeWidth={2}
-                />
-              </>
-            )}
-          </MapView>
-        </View>
-      )}
-
-      {/* 場所名・半径入力 */}
-      <View style={styles.form}>
-        <View style={styles.inputRow}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>場所の名前</Text>
-            <TextInput
-              style={styles.input}
-              value={label}
-              onChangeText={setLabel}
-              placeholder="例: スーパー三和"
-              placeholderTextColor="#BDBDBD"
-            />
+            <View style={styles.legendRow}>
+              <View style={[styles.legendDot, { backgroundColor: '#2196F3' }]} />
+              <Text style={styles.legendText}>登録済み</Text>
+            </View>
           </View>
-          <View style={[styles.inputGroup, styles.inputGroupSmall]}>
-            <Text style={styles.inputLabel}>半径 (m)</Text>
-            <TextInput
-              style={styles.input}
-              value={radius}
-              onChangeText={setRadius}
-              keyboardType="numeric"
-              placeholder="200"
-              placeholderTextColor="#BDBDBD"
-            />
+        )}
+      </View>
+
+      {/* フォーム: 場所名・半径・保存ボタン */}
+      <View style={[styles.form, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+        {/* 場所名 */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>場所の名前</Text>
+          <TextInput
+            style={styles.input}
+            value={label}
+            onChangeText={setLabel}
+            placeholder="例: スーパー三和"
+            placeholderTextColor="#BDBDBD"
+          />
+        </View>
+
+        {/* 半径スライダー */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>通知半径: {radius}m</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={50}
+            maximumValue={maxRadius}
+            step={50}
+            value={radius}
+            onValueChange={val => setRadius(val)}
+            minimumTrackTintColor="#4CAF50"
+            maximumTrackTintColor="#E0E0E0"
+            thumbTintColor="#4CAF50"
+          />
+          <View style={styles.sliderLabels}>
+            <Text style={styles.sliderLabel}>50m</Text>
+            <Text style={styles.sliderLabel}>{maxRadius}m</Text>
           </View>
         </View>
+
+        {/* 選択済みバッジ */}
+        {picked && (
+          <View style={styles.pickedBadge}>
+            <Icon name="check-circle" size={14} color="#4CAF50" />
+            <Text style={styles.pickedBadgeText}>
+              {picked.latitude.toFixed(5)}, {picked.longitude.toFixed(5)}
+            </Text>
+          </View>
+        )}
 
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
           <Icon name="check" size={20} color="#fff" />
@@ -234,71 +303,93 @@ export default function LocationPickerScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+
+  /* 地図 */
+  mapContainer: { flex: 1, position: 'relative' },
+  map: { flex: 1 },
+
+  /* 検索オーバーレイ */
+  searchOverlay: {
+    position: 'absolute',
+    top: 8,
+    left: 12,
+    right: 12,
+    zIndex: 10,
   },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+  searchInputContainer: {
+    backgroundColor: 'transparent',
   },
-  tabActive: { borderBottomColor: '#4CAF50' },
-  tabText: { fontSize: 14, color: '#9E9E9E', fontWeight: '600' },
-  tabTextActive: { color: '#4CAF50' },
-  searchContainer: { flex: 1, padding: 12 },
   searchInput: {
     fontSize: 15,
     backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: 14,
     height: 48,
-    elevation: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
     color: '#212121',
   },
   searchList: {
     backgroundColor: '#fff',
     borderRadius: 10,
     marginTop: 4,
-    elevation: 3,
+    elevation: 5,
   },
   searchRow: { padding: 14 },
   searchDesc: { fontSize: 14, color: '#212121' },
-  pickedBadge: {
+
+  /* ヒントバッジ */
+  hintBadge: {
+    position: 'absolute',
+    bottom: 12,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    elevation: 3,
+  },
+  hintText: { fontSize: 12, color: '#757575' },
+
+  /* 凡例 */
+  legendBadge: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    backgroundColor: 'rgba(255,255,255,0.93)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    elevation: 3,
+    gap: 4,
+  },
+  legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#E8F5E9',
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 10,
   },
-  pickedBadgeText: { fontSize: 12, color: '#2E7D32', flex: 1 },
-  mapContainer: { flex: 1 },
-  mapHint: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#757575',
-    paddingVertical: 6,
-    backgroundColor: '#fff',
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
-  map: { flex: 1 },
+  legendText: { fontSize: 11, color: '#424242' },
+
+  /* フォーム */
   form: {
     backgroundColor: '#fff',
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingTop: 14,
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
   },
-  inputRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
-  inputGroup: { flex: 1 },
-  inputGroupSmall: { flex: 0.45 },
+  inputGroup: { marginBottom: 10 },
   inputLabel: { fontSize: 12, color: '#757575', marginBottom: 4, fontWeight: '600' },
   input: {
     backgroundColor: '#F5F5F5',
@@ -308,6 +399,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#212121',
   },
+
+  /* スライダー */
+  slider: { width: '100%', height: 40 },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: -4,
+  },
+  sliderLabel: { fontSize: 11, color: '#9E9E9E' },
+
+  /* 選択済みバッジ */
+  pickedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 10,
+  },
+  pickedBadgeText: { fontSize: 12, color: '#2E7D32' },
+
+  /* 保存ボタン */
   saveBtn: {
     backgroundColor: '#4CAF50',
     borderRadius: 10,

@@ -6,6 +6,11 @@ buildscript {
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
+        // play-services-location のバージョンを全ライブラリで統一 (競合回避)
+        // react-native-geolocation-service は playServicesLocationVersion を参照
+        // react-native-maps は googlePlayServicesLocationVersion を参照
+        playServicesLocationVersion = "21.3.0"
+        googlePlayServicesLocationVersion = "21.3.0"
     }
     repositories {
         google()

@@ -9,14 +9,22 @@ import { generateId } from '../utils/helpers';
 // ============================================================
 interface SettingsState {
   defaultRadius: number;               // デフォルトのジオフェンス半径 (m)
+  maxRadius: number;                   // スライダー最大値 (300 or 1000)
   setDefaultRadius: (radius: number) => void;
+  setMaxRadius: (max: number) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
     set => ({
       defaultRadius: 200,
+      maxRadius: 400,
       setDefaultRadius: (radius: number) => set({ defaultRadius: radius }),
+      setMaxRadius: (max: number) => set(state => ({
+        maxRadius: max,
+        // デフォルト半径が新しい上限を超えている場合は切り詰め
+        defaultRadius: state.defaultRadius > max ? max : state.defaultRadius,
+      })),
     }),
     {
       name: 'settings',

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useMemoStore } from '../store/memoStore';
 import { Memo, RootStackParamList } from '../types';
@@ -19,6 +20,7 @@ export default function MemoListScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
   const memos = useMemoStore(s => s.memos);
   const deleteMemo = useMemoStore(s => s.deleteMemo);
+  const insets = useSafeAreaInsets();
 
   const handleDelete = useCallback(
     (memo: Memo) => {
@@ -75,7 +77,7 @@ export default function MemoListScreen(): React.JSX.Element {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.headerTitle}>買い物リスト</Text>
         <TouchableOpacity
           style={styles.addBtn}
@@ -111,7 +113,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    paddingTop: 20,
   },
   headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
   addBtn: {

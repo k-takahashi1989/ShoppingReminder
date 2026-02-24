@@ -53,6 +53,8 @@ async function checkLocationPermissions(): Promise<{
 export default function SettingsScreen(): React.JSX.Element {
   const defaultRadius = useSettingsStore(s => s.defaultRadius);
   const setDefaultRadius = useSettingsStore(s => s.setDefaultRadius);
+  const maxRadius = useSettingsStore(s => s.maxRadius);
+  const setMaxRadius = useSettingsStore(s => s.setMaxRadius);
 
   const [perms, setPerms] = useState<{
     fine: PermStatus;
@@ -203,7 +205,7 @@ export default function SettingsScreen(): React.JSX.Element {
         <Slider
           style={styles.slider}
           minimumValue={50}
-          maximumValue={1000}
+          maximumValue={maxRadius}
           step={50}
           value={defaultRadius}
           onValueChange={setDefaultRadius}
@@ -213,7 +215,23 @@ export default function SettingsScreen(): React.JSX.Element {
         />
         <View style={styles.sliderLabels}>
           <Text style={styles.sliderLabel}>50m</Text>
-          <Text style={styles.sliderLabel}>1000m</Text>
+          <Text style={styles.sliderLabel}>{maxRadius}m</Text>
+        </View>
+      </View>
+
+      {/* 半径拡大オプション */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>通知半径の上限</Text>
+        <Text style={styles.infoText}>スライダーの上限値を選択してください</Text>
+        <View style={styles.maxRadiusRow}>
+          {[200, 400, 600, 800, 1000].map(val => (
+            <TouchableOpacity
+              key={val}
+              style={[styles.maxRadiusBtn, maxRadius === val && styles.maxRadiusBtnActive]}
+              onPress={() => setMaxRadius(val)}>
+              <Text style={[styles.maxRadiusBtnText, maxRadius === val && styles.maxRadiusBtnTextActive]}>{val}m</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -286,5 +304,30 @@ const styles = StyleSheet.create({
     marginTop: -4,
   },
   sliderLabel: { fontSize: 11, color: '#9E9E9E' },
+  maxRadiusRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+  },
+  maxRadiusBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  maxRadiusBtnActive: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#E8F5E9',
+  },
+  maxRadiusBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#9E9E9E',
+  },
+  maxRadiusBtnTextActive: {
+    color: '#4CAF50',
+  },
   infoText: { fontSize: 13, color: '#757575', marginBottom: 4 },
 });

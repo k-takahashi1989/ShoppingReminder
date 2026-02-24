@@ -17,8 +17,10 @@ import {
   RouteProp,
 } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useMemoStore } from '../store/memoStore';
+import { useShallow } from 'zustand/react/shallow';
 import { RootStackParamList, ShoppingItem } from '../types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -36,6 +38,7 @@ export default function MemoEditScreen(): React.JSX.Element {
   const deleteItem = useMemoStore(s => s.deleteItem);
   const updateItem = useMemoStore(s => s.updateItem);
 
+  const insets = useSafeAreaInsets();
   const [title, setTitle] = useState(existingMemo?.title ?? '');
   const [newItemName, setNewItemName] = useState('');
   const [savedMemoId, setSavedMemoId] = useState<string | undefined>(memoId);
@@ -43,13 +46,6 @@ export default function MemoEditScreen(): React.JSX.Element {
   useEffect(() => {
     if (existingMemo) setTitle(existingMemo.title);
   }, [existingMemo]);
-
-  const getSavedItems = (): ShoppingItem[] => {
-    if (savedMemoId) {
-      return useMemoStore.getState().getMemoById(savedMemoId)?.items ?? [];
-    }
-    return [];
-  };
 
   const handleSaveTitle = useCallback(() => {
     if (!title.trim()) {
@@ -81,9 +77,12 @@ export default function MemoEditScreen(): React.JSX.Element {
     setNewItemName('');
   }, [newItemName, savedMemoId, title, addMemo, addItem]);
 
-  const currentItems = savedMemoId
-    ? (useMemoStore.getState().getMemoById(savedMemoId)?.items ?? [])
-    : [];
+  const currentItems = useMemoStore(
+    useShallow((s): ShoppingItem[] => {
+      if (!savedMemoId) return [];
+      return s.memos.find(m => m.id === savedMemoId)?.items ?? [];
+    }),
+  );
 
   const renderItem = ({ item }: { item: ShoppingItem }) => (
     <View style={styles.itemRow}>
@@ -159,7 +158,7 @@ export default function MemoEditScreen(): React.JSX.Element {
       </ScrollView>
 
       {/* 完了 */}
-      <TouchableOpacity style={styles.doneBtn} onPress={handleDone}>
+      <TouchableOpacity style={[styles.doneBtn, { marginBottom: Math.max(insets.bottom, 16) }]} onPress={handleDone}>
         <Text style={styles.doneBtnText}>完了</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>

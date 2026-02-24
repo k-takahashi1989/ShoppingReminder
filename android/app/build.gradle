@@ -83,17 +83,23 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.shoppingreminder"
+    namespace "com.ktakahashi.shoppingreminder"
     defaultConfig {
-        applicationId "com.shoppingreminder"
+        applicationId "com.ktakahashi.shoppingreminder"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        // .env の値を AndroidManifest.xml の ${GOOGLE_MAPS_API_KEY} に注入
+        // .env の GOOGLE_MAPS_API_KEY を manifestPlaceholders 経由で注入
         manifestPlaceholders = [
             GOOGLE_MAPS_API_KEY: project.env.get("GOOGLE_MAPS_API_KEY") ?: ""
         ]
+
+        // デバッグビルドは実機(arm64)のみコンパイルしてビルド時間を短縮
+        // リリース時は削除して全アーキテクチャをビルドすること
+        ndk {
+            abiFilters "arm64-v8a"
+        }
     }
     signingConfigs {
         debug {
@@ -106,12 +112,15 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            // Metro (cleartext HTTP) の接続を許可
+            manifestPlaceholders += [usesCleartextTraffic: "true"]
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
+            manifestPlaceholders += [usesCleartextTraffic: "false"]
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }

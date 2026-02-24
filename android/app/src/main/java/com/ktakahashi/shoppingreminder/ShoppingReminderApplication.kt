@@ -1,4 +1,4 @@
-package com.shoppingreminder
+package com.ktakahashi.shoppingreminder
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -7,7 +7,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 
-class MainApplication : Application(), ReactApplication {
+class ShoppingReminderApplication : Application(), ReactApplication {
 
   override val reactHost: ReactHost by lazy {
     getDefaultReactHost(

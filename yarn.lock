@@ -4882,6 +4882,10 @@ react-native-mmkv@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/react-native-mmkv/-/react-native-mmkv-4.1.2.tgz#fb337930ec50d509392832c649b578a00c0d008e"
 
+react-native-nitro-modules@^0.33.9:
+  version "0.33.9"
+  resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.33.9.tgz#77983bd170b81b87e05c2989c82d91475649569d"
+
 react-native-permissions@^5.4.4:
   version "5.4.4"
   resolved "https://registry.yarnpkg.com/react-native-permissions/-/react-native-permissions-5.4.4.tgz#8a63b001fc0f9e88426c36b21a6fe379c4533b04"
