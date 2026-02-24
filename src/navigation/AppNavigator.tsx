@@ -1,11 +1,12 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useRef, useEffect } from 'react';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useInterstitialAd } from '../hooks/useInterstitialAd';
 import { useSettingsStore } from '../store/memoStore';
 import { useTranslation } from 'react-i18next';
+import { useForegroundNotificationHandler } from '../services/notificationService';
 
 import { RootStackParamList, MainTabParamList } from '../types';
 import MemoListScreen from '../screens/MemoListScreen';
@@ -62,8 +63,17 @@ function MainTabs(): React.JSX.Element {
 
 export function AppNavigator(): React.JSX.Element {
   const { t } = useTranslation();
+  const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
+
+  // フォアグラウンドで通知をタップしたとき MemoDetail へ遷移
+  useEffect(() => {
+    useForegroundNotificationHandler((memoId: string) => {
+      navigationRef.current?.navigate('MemoDetail', { memoId });
+    });
+  }, []);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{
           headerTintColor: '#4CAF50',

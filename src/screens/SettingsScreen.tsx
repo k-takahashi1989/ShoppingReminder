@@ -21,6 +21,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdBanner from '../components/AdBanner';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
+import { changeAndPersistLanguage } from '../i18n';
 import { useSettingsStore } from '../store/memoStore';
 import {
   startGeofenceMonitoring,
@@ -66,11 +67,13 @@ export default function SettingsScreen(): React.JSX.Element {
     notification: PermStatus;
   }>({ fine: 'unknown', background: 'unknown', notification: 'unknown' });
 
+  const [displayRadius, setDisplayRadius] = useState(defaultRadius);
+
   const [isMonitoring, setIsMonitoring] = useState(BackgroundService.isRunning());
   const [currentLang, setCurrentLang] = useState(i18n.language);
 
   const handleChangeLang = (lang: string) => {
-    i18n.changeLanguage(lang);
+    changeAndPersistLanguage(lang);
     setCurrentLang(lang);
   };
 
@@ -165,8 +168,11 @@ export default function SettingsScreen(): React.JSX.Element {
         Alert.alert(t('settings.alertFineLocation.title'), t('settings.alertMonitor.message'));
         return;
       }
-      await startGeofenceMonitoring();
-      setIsMonitoring(true);
+      const ok = await startGeofenceMonitoring();
+      setIsMonitoring(ok);
+      if (!ok) {
+        Alert.alert(t('common.error'), t('settings.alertMonitor.message'));
+      }
     }
   };
 
@@ -252,14 +258,15 @@ export default function SettingsScreen(): React.JSX.Element {
       {/* デフォルト半径 */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('settings.defaultRadius.title')}</Text>
-        <Text style={styles.radiusValue}>{defaultRadius} m</Text>
+        <Text style={styles.radiusValue}>{displayRadius} m</Text>
         <Slider
           style={styles.slider}
           minimumValue={50}
           maximumValue={maxRadius}
           step={50}
           value={defaultRadius}
-          onValueChange={setDefaultRadius}
+          onValueChange={setDisplayRadius}
+          onSlidingComplete={setDefaultRadius}
           minimumTrackTintColor="#4CAF50"
           maximumTrackTintColor="#E0E0E0"
           thumbTintColor="#4CAF50"
@@ -306,7 +313,7 @@ export default function SettingsScreen(): React.JSX.Element {
       {/* アプリ情報 */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('settings.appInfo.title')}</Text>
-        <Text style={styles.infoText}>{t('settings.appInfo.version')}</Text>
+        <Text style={styles.infoText}>{t('settings.appInfo.version', { version: '1.0.0' })}</Text>
         <Text style={styles.infoText}>{t('settings.appInfo.name')}</Text>
       </View>
       <AdBanner />

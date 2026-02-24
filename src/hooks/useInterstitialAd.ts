@@ -4,10 +4,11 @@ import {
   AdEventType,
   TestIds,
 } from 'react-native-google-mobile-ads';
+import Config from 'react-native-config';
 
-// リリース前に本番IDに差し替える:
-// const AD_UNIT_ID = 'ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ';
-const AD_UNIT_ID = TestIds.INTERSTITIAL;
+const AD_UNIT_ID = __DEV__
+  ? TestIds.INTERSTITIAL
+  : (Config.ADMOB_INTERSTITIAL_ID || TestIds.INTERSTITIAL);
 
 /**
  * インタースティシャル広告フック

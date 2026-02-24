@@ -5,10 +5,11 @@ import {
   BannerAdSize,
   TestIds,
 } from 'react-native-google-mobile-ads';
+import Config from 'react-native-config';
 
-// リリース前に本番IDに差し替える:
-// const AD_UNIT_ID = 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY';
-const AD_UNIT_ID = TestIds.ADAPTIVE_BANNER;
+const AD_UNIT_ID = __DEV__
+  ? TestIds.ADAPTIVE_BANNER
+  : (Config.ADMOB_BANNER_ID || TestIds.ADAPTIVE_BANNER);
 
 export default function AdBanner(): React.JSX.Element | null {
   if (Platform.OS !== 'android') return null;
@@ -16,6 +17,7 @@ export default function AdBanner(): React.JSX.Element | null {
     <BannerAd
       unitId={AD_UNIT_ID}
       size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+      onAdFailedToLoad={(error) => __DEV__ && console.warn('AdBanner failed:', error)}
     />
   );
 }

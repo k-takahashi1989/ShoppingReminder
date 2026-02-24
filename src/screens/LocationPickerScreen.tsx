@@ -18,8 +18,6 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Circle, LongPressEvent, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-// GooglePlacesAutocomplete は将来再有効化
-// import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Geolocation from 'react-native-geolocation-service';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -73,37 +71,42 @@ export default function LocationPickerScreen(): React.JSX.Element {
   const [initialRegion, setInitialRegion] = useState<Region>(FALLBACK_REGION);
 
   const mapRef = useRef<MapView>(null);
+  const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 逆ジオコーディングで住所（町名まで）を取得 - OpenStreetMap Nominatim使用（APIキー不要）
-  const reverseGeocode = async (lat: number, lng: number) => {
+  // Nominatim のポリシーにより 1秒以下の間隔でリクエストしないようデバウンスする
+  const reverseGeocode = (lat: number, lng: number) => {
     setAddress(null);
-    try {
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ja&zoom=16`;
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'ShoppingReminderApp/1.0' },
-      });
+    if (geocodeTimerRef.current) clearTimeout(geocodeTimerRef.current);
+    geocodeTimerRef.current = setTimeout(async () => {
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ja&zoom=16`;
+        const res = await fetch(url, {
+          headers: { 'User-Agent': 'YorimichiApp/1.0' },
+        });
       const json = await res.json();
-      if (json && json.address) {
-        const a = json.address as Record<string, string>;
-        // 都道府県: state（東京都等） または province（大阪府等）
-        const pref  = a.state ?? a.province ?? '';
-        // 市区 / 町 / 村
-        const city  = a.city ?? a.town ?? a.village ?? '';
-        // 区・郡など
-        const ward  = a.suburb ?? '';
-        // 丁目・町名
-        const area  = a.quarter ?? a.neighbourhood ?? '';
-        const parts  = [pref, city, ward, area].filter(Boolean);
-        // 重複除去
-        const unique = parts.filter((v, i) => parts.indexOf(v) === i);
-        const formatted = unique.join('');
-        if (formatted) {
-          setAddress(formatted);
+        if (json && json.address) {
+          const a = json.address as Record<string, string>;
+          // 都道府県: state（東京都等） または province（大阪府等）
+          const pref  = a.state ?? a.province ?? '';
+          // 市区 / 町 / 村
+          const city  = a.city ?? a.town ?? a.village ?? '';
+          // 区・郡など
+          const ward  = a.suburb ?? '';
+          // 丁目・町名
+          const area  = a.quarter ?? a.neighbourhood ?? '';
+          const parts  = [pref, city, ward, area].filter(Boolean);
+          // 重複除去
+          const unique = parts.filter((v, i) => parts.indexOf(v) === i);
+          const formatted = unique.join('');
+          if (formatted) {
+            setAddress(formatted);
+          }
         }
+      } catch {
+        // 住所取得失敗は無視
       }
-    } catch {
-      // 住所取得失敗は無視
-    }
+    }, 1000);
   };
 
   // 起動時に現在地を取得して地図の中心にセット

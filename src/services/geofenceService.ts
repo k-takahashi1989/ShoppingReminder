@@ -118,21 +118,27 @@ function sleep(ms: number): Promise<void> {
 // ============================================================
 // 公開 API
 // ============================================================
-export async function startGeofenceMonitoring(): Promise<void> {
-  if (BackgroundService.isRunning()) return;
+export async function startGeofenceMonitoring(): Promise<boolean> {
+  if (BackgroundService.isRunning()) return true;
 
-  await BackgroundService.start(backgroundTask, {
-    taskName: 'ShoppingReminderGeofence',
-    taskTitle: 'ショッピングリマインダー',
-    taskDesc: '登録した場所に近づくとお知らせします',
-    taskIcon: {
-      name: 'ic_notification',
-      type: 'drawable',
-    },
-    color: '#4CAF50',
-    linkingURI: 'shoppingreminder://open',
-    parameters: {},
-  });
+  try {
+    await BackgroundService.start(backgroundTask, {
+      taskName: 'YorimichiGeofence',
+      taskTitle: 'Yorimichi',
+      taskDesc: '登録した場所に近づくとお知らせします',
+      taskIcon: {
+        name: 'ic_notification',
+        type: 'drawable',
+      },
+      color: '#4CAF50',
+      linkingURI: 'shoppingreminder://open',
+      parameters: {},
+    });
+    return true;
+  } catch (error) {
+    __DEV__ && console.warn('startGeofenceMonitoring failed:', error);
+    return false;
+  }
 }
 
 export async function stopGeofenceMonitoring(): Promise<void> {

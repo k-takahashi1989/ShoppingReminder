@@ -28,6 +28,9 @@ const ja = {
     itemsLabel: 'もちものリスト',
     addItemPlaceholder: '+ アイテムを追加',
     doneButton: '完了',
+    unsavedTitle: '編集中の内容があります',
+    unsavedMessage: '保存されていない変更があります。破棄しますか？',
+    unsavedDiscard: '破棄する',
     errorTitle: 'エラー',
     errorEmptyTitle: 'タイトルを入力してください',
     errorNeedTitleFirst: 'メモタイトルを入力してください',
@@ -109,7 +112,7 @@ const ja = {
     },
     appInfo: {
       title: 'アプリ情報',
-      version: 'バージョン: 1.0.0',
+      version: 'バージョン: {{version}}',
       name: 'Yorimichi',
     },
     alertFineLocation: {

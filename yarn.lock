@@ -1510,10 +1510,6 @@
     metro-config "^0.83.3"
     metro-runtime "^0.83.3"
 
-"@react-native/new-app-screen@0.84.0":
-  version "0.84.0"
-  resolved "https://registry.yarnpkg.com/@react-native/new-app-screen/-/new-app-screen-0.84.0.tgz#ad4c3274007a84744f309709aa2d88f1826a45cb"
-
 "@react-native/normalize-colors@0.84.0":
   version "0.84.0"
   resolved "https://registry.yarnpkg.com/@react-native/normalize-colors/-/normalize-colors-0.84.0.tgz#c5ef828a4b3340c45e66b6d01a656a458611f885"
@@ -4795,12 +4791,6 @@ pure-rand@^6.0.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-6.1.0.tgz#d173cf23258231976ccbdb05247c9787957604f2"
 
-qs@^6.14.1:
-  version "6.15.0"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.15.0.tgz#db8fd5d1b1d2d6b5b33adaf87429805f1909e7b3"
-  dependencies:
-    side-channel "^1.1.0"
-
 qs@~6.14.0:
   version "6.14.2"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.14.2.tgz#b5634cf9d9ad9898e31fba3504e866e8efb6798c"
@@ -4899,14 +4889,6 @@ react-native-google-mobile-ads@^16.0.3:
     "@iabtcf/core" "^1.5.6"
     use-deep-compare-effect "^1.8.1"
 
-react-native-google-places-autocomplete@^2.6.4:
-  version "2.6.4"
-  resolved "https://registry.yarnpkg.com/react-native-google-places-autocomplete/-/react-native-google-places-autocomplete-2.6.4.tgz#221541c9d4a9d52b99a4402e7a950a2ee2a0e17a"
-  dependencies:
-    lodash.debounce "^4.0.8"
-    qs "^6.14.1"
-    react-native-uuid "^2.0.3"
-
 react-native-maps@^1.27.1:
   version "1.27.1"
   resolved "https://registry.yarnpkg.com/react-native-maps/-/react-native-maps-1.27.1.tgz#399aafcc0dec367c2bf30d34141d411f50b0bbd0"
@@ -4935,10 +4917,6 @@ react-native-screens@^4.23.0:
   dependencies:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
-
-react-native-uuid@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/react-native-uuid/-/react-native-uuid-2.0.3.tgz#f85f8a8d68e52e3f1c18ba0f02ec7776f9d4a0da"
 
 react-native-vector-icons@^10.3.0:
   version "10.3.0"

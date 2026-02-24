@@ -52,13 +52,45 @@ export default function MemoEditScreen(): React.JSX.Element {
   const [newItemName, setNewItemName] = useState('');
   const [savedMemoId, setSavedMemoId] = useState<string | undefined>(memoId);
 
+  const currentItems = useMemoStore(
+    useShallow((s): ShoppingItem[] => {
+      if (!savedMemoId) return [];
+      return s.memos.find(m => m.id === savedMemoId)?.items ?? [];
+    }),
+  );
+
   useEffect(() => {
     if (existingMemo) setTitle(existingMemo.title);
   }, [existingMemo]);
 
+  // 未保存の変更がある場合、戻るときに確認ダイアログを表示
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // 新規作成でまだ何も入力していない場合はスキップ
+      if (!memoId && !title.trim() && currentItems.length === 0) return;
+      // MemoDetail への replace 遷移時はスキップ
+      if (e.data.action.type === 'REPLACE') return;
+
+      e.preventDefault();
+      Alert.alert(
+        t('memoEdit.unsavedTitle'),
+        t('memoEdit.unsavedMessage'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('memoEdit.unsavedDiscard'),
+            style: 'destructive',
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ],
+      );
+    });
+    return unsubscribe;
+  }, [navigation, memoId, title, currentItems.length, t]);
+
   const handleSaveTitle = useCallback(() => {
     if (!title.trim()) {
-      Alert.alert('エラー', 'タイトルを入力してください');
+      Alert.alert(t('memoEdit.errorTitle'), t('memoEdit.errorEmptyTitle'));
       return;
     }
     if (savedMemoId) {
@@ -86,13 +118,6 @@ export default function MemoEditScreen(): React.JSX.Element {
     setNewItemName('');
   }, [newItemName, savedMemoId, title, addMemo, addItem]);
 
-  const currentItems = useMemoStore(
-    useShallow((s): ShoppingItem[] => {
-      if (!savedMemoId) return [];
-      return s.memos.find(m => m.id === savedMemoId)?.items ?? [];
-    }),
-  );
-
   const renderItem = ({ item }: { item: ShoppingItem }) => (
     <View style={styles.itemRow}>
       <Icon name="drag-handle" size={20} color="#BDBDBD" />
@@ -112,7 +137,7 @@ export default function MemoEditScreen(): React.JSX.Element {
 
   const handleDone = () => {
     if (!title.trim()) {
-      Alert.alert('エラー', 'タイトルを入力してください');
+      Alert.alert(t('memoEdit.errorTitle'), t('memoEdit.errorEmptyTitle'));
       return;
     }
     const isNew = !memoId; // ルートパラメータがない → 新規作成

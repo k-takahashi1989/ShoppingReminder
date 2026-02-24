@@ -36,7 +36,7 @@ export default function MemoListScreen(): React.JSX.Element {
         },
       ]);
     },
-    [deleteMemo],
+    [deleteMemo, t],
   );
 
   const renderItem = ({ item }: { item: Memo }) => {

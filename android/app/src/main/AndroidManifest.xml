@@ -60,10 +60,19 @@
         </intent-filter>
       </activity>
 
-      <!-- AdMob: テスト用App ID（リリース前に本番IDに差し替え） -->
+      <!-- 端末再起動後にジオフェンス監視を再開 -->
+      <receiver
+          android:name=".BootReceiver"
+          android:exported="true">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED" />
+          </intent-filter>
+      </receiver>
+
+      <!-- AdMob: .env の ADMOB_APP_ID から注入（未設定時はテストID） -->
       <meta-data
           android:name="com.google.android.gms.ads.APPLICATION_ID"
-          android:value="ca-app-pub-3940256099942544~3347511713"
+          android:value="${ADMOB_APP_ID}"
           tools:replace="android:value"/>
     </application>
 </manifest>

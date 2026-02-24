@@ -1,4 +1,4 @@
-import { haversineDistance, timeAgo, generateId } from '../src/utils/helpers';
+import { haversineDistance, generateId } from '../src/utils/helpers';
 
 // ============================================================
 // haversineDistance
@@ -36,40 +36,6 @@ describe('haversineDistance', () => {
     const farLat = baseLat + 0.01;
     const dist = haversineDistance(baseLat, baseLon, farLat, baseLon);
     expect(dist).toBeGreaterThan(1000);
-  });
-});
-
-// ============================================================
-// timeAgo
-// ============================================================
-describe('timeAgo', () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-24T12:00:00Z'));
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('30秒前は「たった今」を返す', () => {
-    const ts = Date.now() - 30 * 1000;
-    expect(timeAgo(ts)).toBe('たった今');
-  });
-
-  it('5分前は「5分前」を返す', () => {
-    const ts = Date.now() - 5 * 60 * 1000;
-    expect(timeAgo(ts)).toBe('5分前');
-  });
-
-  it('3時間前は「3時間前」を返す', () => {
-    const ts = Date.now() - 3 * 60 * 60 * 1000;
-    expect(timeAgo(ts)).toBe('3時間前');
-  });
-
-  it('2日前は「2日前」を返す', () => {
-    const ts = Date.now() - 2 * 24 * 60 * 60 * 1000;
-    expect(timeAgo(ts)).toBe('2日前');
   });
 });
 

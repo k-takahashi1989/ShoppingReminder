@@ -92,14 +92,11 @@ android {
         versionName "1.0"
         // .env の GOOGLE_MAPS_API_KEY を manifestPlaceholders 経由で注入
         manifestPlaceholders = [
-            GOOGLE_MAPS_API_KEY: project.env.get("GOOGLE_MAPS_API_KEY") ?: ""
+            GOOGLE_MAPS_API_KEY: project.env.get("GOOGLE_MAPS_API_KEY") ?: "",
+            ADMOB_APP_ID: project.env.get("ADMOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"
         ]
 
-        // デバッグビルドは実機(arm64)のみコンパイルしてビルド時間を短縮
-        // リリース時は削除して全アーキテクチャをビルドすること
-        ndk {
-            abiFilters "arm64-v8a"
-        }
+        // ABI Filter は debug で下記に設定（release は全アーキテクチャ）
     }
     signingConfigs {
         debug {
@@ -108,17 +105,38 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // リリース署名: keystore.properties から読み込み
+        // keystore.properties は Git 管理外にすること
+        release {
+            def keystorePropertiesFile = rootProject.file('keystore.properties')
+            if (keystorePropertiesFile.exists()) {
+                def keystoreProperties = new Properties()
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            } else {
+                // keystore.properties がない場合は debug キーにフォールバック
+                storeFile file('debug.keystore')
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
             // Metro (cleartext HTTP) の接続を許可
             manifestPlaceholders += [usesCleartextTraffic: "true"]
+            // デバッグは arm64 のみでビルド高速化
+            ndk {
+                abiFilters "arm64-v8a"
+            }
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             manifestPlaceholders += [usesCleartextTraffic: "false"]
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"

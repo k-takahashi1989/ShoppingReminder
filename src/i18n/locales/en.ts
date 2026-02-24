@@ -27,6 +27,9 @@ const en: Translation = {
     itemsLabel: 'Checklist',
     addItemPlaceholder: '+ Add item',
     doneButton: 'Done',
+    unsavedTitle: 'Unsaved changes',
+    unsavedMessage: 'You have unsaved changes. Discard them?',
+    unsavedDiscard: 'Discard',
     errorTitle: 'Error',
     errorEmptyTitle: 'Please enter a title',
     errorNeedTitleFirst: 'Enter a memo title first',
@@ -105,7 +108,7 @@ const en: Translation = {
     },
     appInfo: {
       title: 'App Info',
-      version: 'Version: 1.0.0',
+      version: 'Version: {{version}}',
       name: 'Nearist',
     },
     alertFineLocation: {

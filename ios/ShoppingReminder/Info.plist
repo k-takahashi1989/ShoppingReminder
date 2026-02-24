@@ -35,7 +35,11 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Yorimichiは登録した場所に近づいたときにリマインド通知を送るため、位置情報を使用します。</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Yorimichiはアプリを閉じているときも場所に近づいた通知を送るため、常に位置情報へのアクセスが必要です。</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Yorimichiはアプリを閉じているときも場所に近づいた通知を送るため、常に位置情報へのアクセスが必要です。</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

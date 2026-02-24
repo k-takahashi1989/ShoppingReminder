@@ -12,7 +12,7 @@ const CHANNEL_ID = 'shopping-reminder';
 export async function createNotificationChannel(): Promise<void> {
   await notifee.createChannel({
     id: CHANNEL_ID,
-    name: 'ショッピングリマインダー',
+    name: 'Yorimichi',
     importance: AndroidImportance.HIGH,
     sound: 'default',
     vibration: true,
@@ -33,7 +33,7 @@ export async function showArrivalNotification(params: {
   await notifee.displayNotification({
     id: `arrival-${memoId}`,
     title: `📍 ${locationLabel} に近づいています`,
-    body: `「${memoTitle}」の買い物リスト (${itemCount}点) を確認しましょう`,
+    body: `「${memoTitle}」のもちものリスト (${itemCount}点) を確認しましょう`,
     // data はトップレベルに置く (notifee 仕様)
     data: { memoId },
     android: {
@@ -41,7 +41,7 @@ export async function showArrivalNotification(params: {
       importance: AndroidImportance.HIGH,
       style: {
         type: AndroidStyle.BIGTEXT,
-        text: `「${memoTitle}」の買い物リスト (${itemCount}点) を確認しましょう\n\nタップしてメモを開く`,
+        text: `「${memoTitle}」のもちものリスト (${itemCount}点) を確認しましょう\n\nタップしてメモを開く`,
       },
       pressAction: {
         id: 'open_memo',

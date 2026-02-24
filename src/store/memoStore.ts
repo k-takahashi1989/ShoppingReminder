@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { Memo, ShoppingItem, MemoLocation } from '../types';
 import { mmkvStorage } from '../storage/mmkvStorage';
 import { generateId } from '../utils/helpers';
+import { clearMemoFromCache } from '../services/geofenceService';
 
 // ============================================================
 // 設定ストア
@@ -33,7 +34,12 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'settings',
+      version: 1,
       storage: createJSONStorage(() => mmkvStorage),
+      migrate: (persisted: any, version: number) => {
+        if (version === 0 || !persisted) return persisted;
+        return persisted;
+      },
     },
   ),
 );
@@ -90,10 +96,12 @@ export const useMemoStore = create<MemoState>()(
           ),
         })),
 
-      deleteMemo: (id) =>
+      deleteMemo: (id) => {
+        clearMemoFromCache(id);
         set(state => ({
           memos: state.memos.filter(m => m.id !== id),
-        })),
+        }));
+      },
 
       getMemoById: (id) => get().memos.find(m => m.id === id),
 
@@ -198,7 +206,12 @@ export const useMemoStore = create<MemoState>()(
     }),
     {
       name: 'memos',
+      version: 1,
       storage: createJSONStorage(() => mmkvStorage),
+      migrate: (persisted: any, version: number) => {
+        if (version === 0 || !persisted) return persisted;
+        return persisted;
+      },
     },
   ),
 );

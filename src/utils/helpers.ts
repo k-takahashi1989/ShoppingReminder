@@ -22,23 +22,6 @@ export function haversineDistance(
 }
 
 /**
- * 開始日時から経過した "より分" の文字列表現を返す
+ * ユニークな ID を生成する (uuid v4)
  */
-export function timeAgo(timestampMs: number): string {
-  const diff = Date.now() - timestampMs;
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (days > 0) return `${days}日前`;
-  if (hours > 0) return `${hours}時間前`;
-  if (mins > 0) return `${mins}分前`;
-  return 'たった今';
-}
-
-/**
- * ユニークな ID を生成する
- */
-export function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
-}
+export { v4 as generateId } from 'uuid';
