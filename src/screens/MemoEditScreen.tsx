@@ -221,9 +221,11 @@ export default function MemoEditScreen(): React.JSX.Element {
               setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 400);
             }}
           />
-          <TouchableOpacity onPress={handleAddItem} style={styles.addButton}>
-            <Icon name="add" size={20} color="#4CAF50" />
-          </TouchableOpacity>
+          {newItemName.trim().length > 0 && (
+            <TouchableOpacity onPress={handleAddItem} style={styles.addButton}>
+              <Icon name="add" size={20} color="#4CAF50" />
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 

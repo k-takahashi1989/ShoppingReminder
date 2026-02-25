@@ -12,13 +12,13 @@ import { haversineDistance } from '../utils/helpers';
 import { showArrivalNotification } from './notificationService';
 import { storage } from '../storage/mmkvStorage';
 
-// 通知を送ったジオフェンスのIDをキャッシュ (再通知防止)
-const notifiedGeofences = new Set<string>();
+// 現在「半径内」にあるジオフェンスのIDをキャッシュ（進入/退出検出用）
+const insideGeofences = new Set<string>();
 
-// MMKV への通知済みキャッシュ保存キー
-const NOTIFIED_CACHE_KEY = 'notified_geofences';
+// MMKV への「半径内」キャッシュ保存キー
+const INSIDE_CACHE_KEY = 'inside_geofences';
 
-const POLL_INTERVAL_MS = 60 * 1000; // 1分ごとに位置確認
+const POLL_INTERVAL_MS = 15 * 1000; // 15秒ごとに位置確認
 
 // ============================================================
 // 位置情報の取得
@@ -48,17 +48,17 @@ function loadMemos(): Memo[] {
   }
 }
 
-function loadNotifiedCache(): void {
+function loadInsideCache(): void {
   try {
-    const raw = storage.getString(NOTIFIED_CACHE_KEY);
+    const raw = storage.getString(INSIDE_CACHE_KEY);
     if (!raw) return;
     const arr: string[] = JSON.parse(raw);
-    arr.forEach(id => notifiedGeofences.add(id));
+    arr.forEach(id => insideGeofences.add(id));
   } catch {}
 }
 
-function saveNotifiedCache(): void {
-  storage.set(NOTIFIED_CACHE_KEY, JSON.stringify([...notifiedGeofences]));
+function saveInsideCache(): void {
+  storage.set(INSIDE_CACHE_KEY, JSON.stringify([...insideGeofences]));
 }
 
 async function checkGeofences(
@@ -66,38 +66,43 @@ async function checkGeofences(
   lon: number,
 ): Promise<void> {
   const memos = loadMemos();
+  let cacheChanged = false;
 
   for (const memo of memos) {
-    if (memo.isCompleted) continue;
+    if (!memo.notificationEnabled) continue;
 
     for (const location of memo.locations) {
       const cacheKey = `${memo.id}:${location.id}`;
-
-      // 既に通知済みならスキップ
-      if (notifiedGeofences.has(cacheKey)) continue;
-
       const distance = haversineDistance(lat, lon, location.latitude, location.longitude);
+      const isInside = distance <= location.radius;
+      const wasInside = insideGeofences.has(cacheKey);
 
-      if (distance <= location.radius) {
-        notifiedGeofences.add(cacheKey);
-        saveNotifiedCache();
-
+      if (isInside && !wasInside) {
+        // 進入: 通知を送る
+        insideGeofences.add(cacheKey);
+        cacheChanged = true;
         await showArrivalNotification({
           memoId: memo.id,
           memoTitle: memo.title,
           locationLabel: location.label,
           itemCount: memo.items.filter(it => !it.isChecked).length,
         });
+      } else if (!isInside && wasInside) {
+        // 退出: 次回進入で再通知できるよう削除
+        insideGeofences.delete(cacheKey);
+        cacheChanged = true;
       }
     }
   }
+
+  if (cacheChanged) saveInsideCache();
 }
 
 // ============================================================
 // バックグラウンドタスク本体
 // ============================================================
 const backgroundTask = async (): Promise<void> => {
-  loadNotifiedCache();
+  loadInsideCache();
 
   // eslint-disable-next-line no-constant-condition
   while (BackgroundService.isRunning()) {
@@ -152,7 +157,7 @@ export async function stopGeofenceMonitoring(): Promise<void> {
  * (次回有効化したときに再通知されるようにする)
  */
 export function clearMemoFromCache(memoId: string): void {
-  const keysToDelete = [...notifiedGeofences].filter(k => k.startsWith(`${memoId}:`));
-  keysToDelete.forEach(k => notifiedGeofences.delete(k));
-  saveNotifiedCache();
+  const keysToDelete = [...insideGeofences].filter(k => k.startsWith(`${memoId}:`));
+  keysToDelete.forEach(k => insideGeofences.delete(k));
+  saveInsideCache();
 }

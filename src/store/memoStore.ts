@@ -10,7 +10,7 @@ import { clearMemoFromCache } from '../services/geofenceService';
 // ============================================================
 interface SettingsState {
   defaultRadius: number;               // デフォルトのジオフェンス半径 (m)
-  maxRadius: number;                   // スライダー最大値 (300 or 1000)
+  maxRadius: number;                   // スライダー最大値
   totalMemoRegistrations: number;      // 新規メモ登録累計（広告表示判定用）
   setDefaultRadius: (radius: number) => void;
   setMaxRadius: (max: number) => void;
@@ -52,11 +52,11 @@ interface MemoState {
 
   // CRUD
   addMemo: (title: string) => Memo;
-  updateMemo: (id: string, partial: Partial<Pick<Memo, 'title' | 'isCompleted'>>) => void;
+  updateMemo: (id: string, partial: Partial<Pick<Memo, 'title' | 'notificationEnabled'>>) => void;
   deleteMemo: (id: string) => void;
   getMemoById: (id: string) => Memo | undefined;
 
-  // ショッピングアイテム
+  // アイテム
   addItem: (memoId: string, name: string) => void;
   updateItem: (memoId: string, itemId: string, partial: Partial<ShoppingItem>) => void;
   deleteItem: (memoId: string, itemId: string) => void;
@@ -81,7 +81,7 @@ export const useMemoStore = create<MemoState>()(
           title,
           items: [],
           locations: [],
-          isCompleted: false,
+          notificationEnabled: true,
           createdAt: now,
           updatedAt: now,
         };
@@ -105,7 +105,7 @@ export const useMemoStore = create<MemoState>()(
 
       getMemoById: (id) => get().memos.find(m => m.id === id),
 
-      // ── ショッピングアイテム ──────────────────────────────
+      // ── アイテム ──────────────────────────────
       addItem: (memoId, name) =>
         set(state => ({
           memos: state.memos.map(m => {
@@ -206,10 +206,21 @@ export const useMemoStore = create<MemoState>()(
     }),
     {
       name: 'memos',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => mmkvStorage),
       migrate: (persisted: any, version: number) => {
-        if (version === 0 || !persisted) return persisted;
+        if (!persisted) return persisted;
+        if (version <= 1) {
+          // v1 → v2: isCompleted削除、notificationEnabled追加
+          const state = persisted as { memos: any[] };
+          if (state.memos) {
+            state.memos = state.memos.map((m: any) => {
+              const { isCompleted: _removed, ...rest } = m;
+              return { ...rest, notificationEnabled: rest.notificationEnabled ?? true };
+            });
+          }
+          return state;
+        }
         return persisted;
       },
     },

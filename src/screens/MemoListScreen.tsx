@@ -45,12 +45,12 @@ export default function MemoListScreen(): React.JSX.Element {
 
     return (
       <TouchableOpacity
-        style={[styles.card, item.isCompleted && styles.cardCompleted]}
+        style={styles.card}
         activeOpacity={0.7}
         onPress={() => navigation.navigate('MemoDetail', { memoId: item.id })}>
         <View style={styles.cardBody}>
-          <Text style={[styles.cardTitle, item.isCompleted && styles.textMuted]}>
-            {item.isCompleted ? '✅ ' : ''}{item.title}
+          <Text style={styles.cardTitle}>
+            {item.title}
           </Text>
           <Text style={styles.cardSub}>
             {total > 0 ? t('memoList.itemsLeft', { unchecked, total }) : t('memoList.noItems')}
@@ -142,7 +142,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#212121', marginBottom: 4 },
   cardSub: { fontSize: 13, color: '#757575' },
   cardLoc: { fontSize: 12, color: '#4CAF50', marginTop: 4 },
-  textMuted: { color: '#9E9E9E', textDecorationLine: 'line-through' },
   cardActions: { flexDirection: 'row', gap: 8, marginLeft: 8 },
   deleteBtn: { marginLeft: 4 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },

@@ -13,7 +13,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdBanner from '../components/AdBanner';
 import { useTranslation } from 'react-i18next';
 import { useMemoStore } from '../store/memoStore';
-import { clearMemoFromCache } from '../services/geofenceService';
 import { RootStackParamList, ShoppingItem, MemoLocation } from '../types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -38,23 +37,8 @@ export default function MemoDetailScreen(): React.JSX.Element {
     );
   }
 
-  const handleComplete = () => {
-    Alert.alert(
-      memo.isCompleted ? t('memoDetail.completeBtnDone') : t('memoDetail.completeBtnActive'),
-      memo.isCompleted
-        ? t('memoDetail.toggleMsgUndo')
-        : t('memoDetail.toggleMsgComplete'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          onPress: () => {
-            updateMemo(memoId, { isCompleted: !memo.isCompleted });
-            if (!memo.isCompleted) clearMemoFromCache(memoId);
-          },
-        },
-      ],
-    );
+  const handleToggleNotification = () => {
+    updateMemo(memoId, { notificationEnabled: !memo.notificationEnabled });
   };
 
   const handleDeleteLocation = (loc: MemoLocation) => {
@@ -115,9 +99,19 @@ export default function MemoDetailScreen(): React.JSX.Element {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-      {/* タイトル + 編集ボタン */}
+      {/* タイトル + 通知トグル + 編集ボタン */}
       <View style={styles.titleRow}>
         <Text style={styles.title}>{memo.title}</Text>
+        <TouchableOpacity
+          onPress={handleToggleNotification}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.headerIcon}>
+          <Icon
+            name={memo.notificationEnabled ? 'notifications' : 'notifications-off'}
+            size={22}
+            color={memo.notificationEnabled ? '#4CAF50' : '#9E9E9E'}
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.navigate('MemoEdit', { memoId })}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -131,7 +125,7 @@ export default function MemoDetailScreen(): React.JSX.Element {
           <Text style={styles.sectionTitle}>
             {t('memoDetail.locationSection', { count: memo.locations.length })}
           </Text>
-          {memo.locations.length < 3 && !memo.isCompleted && (
+          {memo.locations.length < 3 && (
             <TouchableOpacity
               onPress={() => navigation.navigate('LocationPicker', { memoId })}
               style={styles.addLocBtn}>
@@ -176,20 +170,7 @@ export default function MemoDetailScreen(): React.JSX.Element {
 
       </ScrollView>
 
-      {/* 完了ボタン */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={[styles.completeBtn, memo.isCompleted && styles.completeBtnDone]}
-          onPress={handleComplete}>
-          <Icon
-            name={memo.isCompleted ? 'undo' : 'check-circle'}
-            size={20}
-            color="#fff"
-          />
-          <Text style={styles.completeBtnText}>
-            {memo.isCompleted ? t('memoDetail.completeBtnDone') : t('memoDetail.completeBtnActive')}
-          </Text>
-        </TouchableOpacity>
         <AdBanner />
       </View>
     </View>
@@ -209,6 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: { fontSize: 22, fontWeight: 'bold', color: '#212121', flex: 1, marginRight: 8 },
+  headerIcon: { marginLeft: 8 },
   section: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -249,16 +231,4 @@ const styles = StyleSheet.create({
   itemText: { fontSize: 15, color: '#212121', flex: 1 },
   itemChecked: { color: '#9E9E9E', textDecorationLine: 'line-through' },
   itemDate: { fontSize: 11, color: '#9E9E9E', marginLeft: 4 },
-  completeBtn: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 12,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 4,
-  },
-  completeBtnDone: { backgroundColor: '#757575' },
-  completeBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

@@ -23,7 +23,7 @@ export interface Memo {
   title: string;
   items: ShoppingItem[];
   locations: MemoLocation[];   // 最大3か所
-  isCompleted: boolean;
+  notificationEnabled: boolean;
   createdAt: number;           // Unix タイムスタンプ (ms)
   updatedAt: number;
 }
