@@ -33,7 +33,7 @@ export default function MemoDetailScreen(): React.JSX.Element {
 
   const bellRef = useRef<View>(null);
   const { step: tutStep, isActive: tutActive, targetLayout: tutLayout, advance: tutAdvance, skip: tutSkip } =
-    useTutorial('memoDetail', 1, [bellRef]);
+    useTutorial('memoDetail', 1, [bellRef], 800);
 
   if (!memo) {
     return (

@@ -274,6 +274,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           query={{
             key: Config.GOOGLE_PLACES_API_KEY ?? '',
             language: i18n.language === 'ja' ? 'ja' : 'en',
+            types: 'geocode|establishment',
           }}
           fetchDetails={true}
           enablePoweredByContainer={false}

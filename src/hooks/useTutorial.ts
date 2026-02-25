@@ -10,7 +10,7 @@ type AnyRef = React.MutableRefObject<any> | React.RefObject<any>;
  * @param totalSteps ステップ総数
  * @param refs       各ステップで spotlight させる ref 配列
  */
-export function useTutorial(key: string, totalSteps: number, refs: AnyRef[]) {
+export function useTutorial(key: string, totalSteps: number, refs: AnyRef[], delay = 400) {
   const seenTutorials = useSettingsStore(s => s.seenTutorials);
   const markTutorialSeen = useSettingsStore(s => s.markTutorialSeen);
 
@@ -32,7 +32,7 @@ export function useTutorial(key: string, totalSteps: number, refs: AnyRef[]) {
           setTargetLayout({ x, y, width, height });
         }
       });
-    }, 400);
+    }, delay);
 
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps

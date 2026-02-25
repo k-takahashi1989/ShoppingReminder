@@ -191,9 +191,9 @@ export default function MemoEditScreen(): React.JSX.Element {
             scrollRef.current?.scrollToEnd({ animated: true });
           }
         }}>
-        {/* タイトル */}
-        <Text style={styles.label}>{t('memoEdit.titleLabel')}</Text>
+        {/* タイトル: ラベル＋入力欄をセットで spotlight */}
         <View ref={titleInputRef} collapsable={false}>
+          <Text style={styles.label}>{t('memoEdit.titleLabel')}</Text>
           <TextInput
             style={styles.titleInput}
             value={title}
@@ -205,19 +205,20 @@ export default function MemoEditScreen(): React.JSX.Element {
           />
         </View>
 
-        {/* アイテム */}
-        <Text style={styles.label}>{t('memoEdit.itemsLabel')}</Text>
-        {currentItems.length > 0 && (
-          <FlatList
-            data={currentItems}
-            keyExtractor={i => i.id}
-            renderItem={renderItem}
-            scrollEnabled={false}
-          />
-        )}
+        {/* アイテム: ラベル＋リスト＋入力行をセットで spotlight */}
+        <View ref={addRowRef} collapsable={false}>
+          <Text style={styles.label}>{t('memoEdit.itemsLabel')}</Text>
+          {currentItems.length > 0 && (
+            <FlatList
+              data={currentItems}
+              keyExtractor={i => i.id}
+              renderItem={renderItem}
+              scrollEnabled={false}
+            />
+          )}
 
-        {/* アイテム入力 */}
-        <View ref={addRowRef} collapsable={false} style={styles.addRow}>
+          {/* アイテム入力 */}
+          <View style={styles.addRow}>
           <TextInput
             style={styles.addInput}
             value={newItemName}
@@ -237,7 +238,8 @@ export default function MemoEditScreen(): React.JSX.Element {
               <Icon name="add" size={20} color="#4CAF50" />
             </TouchableOpacity>
           )}
-        </View>
+          </View>{/* /addRow */}
+        </View>{/* /addRowRef wrapper */}
       </ScrollView>
 
       {/* 確認する */}
