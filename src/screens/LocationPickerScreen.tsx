@@ -72,6 +72,24 @@ export default function LocationPickerScreen(): React.JSX.Element {
 
   const mapRef = useRef<MapView>(null);
   const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mapReadyRef = useRef(false);
+  const pendingRegionRef = useRef<Region | null>(null);
+
+  const animateWhenReady = (region: Region) => {
+    if (mapReadyRef.current) {
+      mapRef.current?.animateToRegion(region, 500);
+    } else {
+      pendingRegionRef.current = region;
+    }
+  };
+
+  const handleMapReady = () => {
+    mapReadyRef.current = true;
+    if (pendingRegionRef.current) {
+      mapRef.current?.animateToRegion(pendingRegionRef.current, 500);
+      pendingRegionRef.current = null;
+    }
+  };
 
   // 逆ジオコーディングで住所（町名まで）を取得 - OpenStreetMap Nominatim使用（APIキー不要）
   // Nominatim のポリシーにより 1秒以下の間隔でリクエストしないようデバウンスする
@@ -121,13 +139,14 @@ export default function LocationPickerScreen(): React.JSX.Element {
           longitudeDelta: 0.01,
         };
         setInitialRegion(region);
-        mapRef.current?.animateToRegion(region, 500);
+        animateWhenReady(region);
       },
       _error => {
         // 位置情報が取得できない場合はフォールバック（東京）を使用
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 既存場所の編集時はフォームに初期値をセット
@@ -143,7 +162,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
     setPicked(coords);
     const region: Region = { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 };
     setInitialRegion(region);
-    setTimeout(() => mapRef.current?.animateToRegion(region, 400), 300);
+    setTimeout(() => animateWhenReady(region), 300);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -211,6 +230,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           provider={PROVIDER_GOOGLE}
           style={styles.map}
           initialRegion={initialRegion}
+          onMapReady={handleMapReady}
           onLongPress={handleMapPress}
           showsUserLocation={true}
           showsMyLocationButton={true}>
