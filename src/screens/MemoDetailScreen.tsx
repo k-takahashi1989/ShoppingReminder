@@ -113,9 +113,11 @@ export default function MemoDetailScreen(): React.JSX.Element {
             onPress={handleToggleNotification}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             style={styles.headerIcon}>
-            <Text style={styles.bellEmoji}>
-              {memo.notificationEnabled ? '🔔' : '🔕'}
-            </Text>
+            <Icon
+              name={memo.notificationEnabled ? 'notifications' : 'notifications-off'}
+              size={22}
+              color={memo.notificationEnabled ? '#4CAF50' : '#9E9E9E'}
+            />
           </TouchableOpacity>
         </View>
         <TouchableOpacity
@@ -209,7 +211,6 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 22, fontWeight: 'bold', color: '#212121', flex: 1, marginRight: 8 },
   headerIcon: { marginLeft: 8 },
-  bellEmoji: { fontSize: 22 },
   pencilBtn: { marginLeft: 16 },
   section: {
     backgroundColor: '#fff',

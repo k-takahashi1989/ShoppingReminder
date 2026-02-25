@@ -151,8 +151,8 @@ const en: Translation = {
     ok: 'OK',
     memoEdit: {
       step1: '📝 Enter the memo title here',
-      step2: '✏️ Type an item name to reveal the add button',
-      step3: '✅ Tap "Confirm" to save and view the details',
+      step2: `✏️ Type an item and tap + to add it to the list`,
+      step3: `✅ Tap "Confirm" to save. Then add a location to get notified when you're nearby!`,
     },
     memoDetail: {
       step1: '🔔 Tap the bell to toggle location notifications on / off',
