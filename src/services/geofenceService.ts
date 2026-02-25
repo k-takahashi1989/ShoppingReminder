@@ -18,7 +18,7 @@ const insideGeofences = new Set<string>();
 // MMKV への「半径内」キャッシュ保存キー
 const INSIDE_CACHE_KEY = 'inside_geofences';
 
-const POLL_INTERVAL_MS = 15 * 1000; // 15秒ごとに位置確認
+const POLL_INTERVAL_MS = 10 * 1000; // 10秒ごとに位置確認
 
 // ============================================================
 // 位置情報の取得

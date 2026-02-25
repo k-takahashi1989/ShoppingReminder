@@ -63,6 +63,7 @@ const en: Translation = {
     alertMaxMsg: 'You can register up to 3 locations',
     markerSelected: 'Selected',
     markerRegistered: 'Registered',
+    searchPlaceholder: 'Search for a place…',
     hintLongPress: 'Long press to drop pin',
     legendSelected: 'Selected',
     legendRegistered: 'Registered',

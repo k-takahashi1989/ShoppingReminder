@@ -66,6 +66,7 @@ const ja = {
     alertMaxMsg: '場所は最大3か所まで登録できます',
     markerSelected: '選択中',
     markerRegistered: '登録済み',
+    searchPlaceholder: '場所を検索…',
     hintLongPress: '地図を長押しでピン',
     legendSelected: '選択中',
     legendRegistered: '登録済み',

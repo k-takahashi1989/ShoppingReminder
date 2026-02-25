@@ -22,6 +22,8 @@ import Geolocation from 'react-native-geolocation-service';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
+import { GooglePlacesAutocomplete, GooglePlaceData, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
+import Config from 'react-native-config';
 import { useMemoStore } from '../store/memoStore';
 import { useSettingsStore } from '../store/memoStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -44,7 +46,7 @@ const FALLBACK_REGION: Region = {
 };
 
 export default function LocationPickerScreen(): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
   const insets = useSafeAreaInsets();
@@ -173,22 +175,21 @@ export default function LocationPickerScreen(): React.JSX.Element {
     reverseGeocode(coord.latitude, coord.longitude);
   };
 
-  // 将来の有料プランで地名検索を導入する際に再有効化
-  // const handlePlaceSelected = (data: any, details: any) => {
-  //   if (!details?.geometry?.location) return;
-  //   const { lat, lng } = details.geometry.location;
-  //   const coords = { latitude: lat, longitude: lng };
-  //   setPicked(coords);
-  //   if (!label && details.name) setLabel(details.name);
-  //   Keyboard.dismiss();
-  //   reverseGeocode(lat, lng);
-  //   setTimeout(() => {
-  //     mapRef.current?.animateToRegion(
-  //       { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-  //       400,
-  //     );
-  //   }, 100);
-  // };
+  const handlePlaceSelected = (_data: GooglePlaceData, details: GooglePlaceDetail | null) => {
+    if (!details?.geometry?.location) return;
+    const { lat, lng } = details.geometry.location;
+    const coords = { latitude: lat, longitude: lng };
+    setPicked(coords);
+    if (!label && details.name) setLabel(details.name);
+    Keyboard.dismiss();
+    reverseGeocode(lat, lng);
+    setTimeout(() => {
+      mapRef.current?.animateToRegion(
+        { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+        400,
+      );
+    }, 100);
+  };
 
   const handleSave = () => {
     if (!picked) {
@@ -266,7 +267,25 @@ export default function LocationPickerScreen(): React.JSX.Element {
           ))}
         </MapView>
 
-        {/* 検索バーは将来のアップデートで有効化予定 */}
+        {/* 地名検索バー */}
+        <GooglePlacesAutocomplete
+          placeholder={t('locationPicker.searchPlaceholder')}
+          onPress={handlePlaceSelected}
+          query={{
+            key: Config.GOOGLE_PLACES_API_KEY ?? '',
+            language: i18n.language === 'ja' ? 'ja' : 'en',
+          }}
+          fetchDetails={true}
+          enablePoweredByContainer={false}
+          styles={{
+            container: styles.placesContainer,
+            textInputContainer: styles.placesTextInputContainer,
+            textInput: styles.placesTextInput,
+            listView: styles.placesList,
+            row: styles.placesRow,
+            description: styles.placesDescription,
+          }}
+        />
 
         {/* ヒントバッジ */}
         <View style={styles.hintBadge}>
@@ -344,6 +363,47 @@ export default function LocationPickerScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
+
+  /* 地名検索 */
+  placesContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    right: 10,
+    zIndex: 10,
+    elevation: 5,
+  },
+  placesTextInputContainer: {
+    backgroundColor: 'transparent',
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+  },
+  placesTextInput: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    height: 44,
+    fontSize: 14,
+    color: '#212121',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  placesList: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginTop: 2,
+    elevation: 5,
+  },
+  placesRow: {
+    backgroundColor: '#fff',
+    paddingVertical: 4,
+  },
+  placesDescription: {
+    fontSize: 13,
+    color: '#212121',
+  },
 
   /* 地図 */
   mapContainer: { flex: 1, position: 'relative' },
