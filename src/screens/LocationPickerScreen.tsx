@@ -176,7 +176,25 @@ export default function LocationPickerScreen(): React.JSX.Element {
   };
 
   const handlePlaceSelected = (_data: GooglePlaceData, details: GooglePlaceDetail | null) => {
-    if (!details?.geometry?.location) return;
+    // 「現在地を使用」が選択された場合 (details が null)
+    if (!details?.geometry?.location) {
+      Geolocation.getCurrentPosition(
+        pos => {
+          const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+          setPicked(coords);
+          reverseGeocode(coords.latitude, coords.longitude);
+          setTimeout(() => {
+            mapRef.current?.animateToRegion(
+              { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+              400,
+            );
+          }, 100);
+        },
+        _err => {},
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      );
+      return;
+    }
     const { lat, lng } = details.geometry.location;
     const coords = { latitude: lat, longitude: lng };
     setPicked(coords);
@@ -274,10 +292,11 @@ export default function LocationPickerScreen(): React.JSX.Element {
           query={{
             key: Config.GOOGLE_PLACES_API_KEY ?? '',
             language: i18n.language === 'ja' ? 'ja' : 'en',
-            types: 'geocode|establishment',
           }}
           fetchDetails={true}
           enablePoweredByContainer={false}
+          currentLocation={true}
+          currentLocationLabel={i18n.language === 'ja' ? '現在地を使用' : 'Use current location'}
           textInputProps={{ placeholderTextColor: '#9E9E9E' }}
           styles={{
             container: styles.placesContainer,
