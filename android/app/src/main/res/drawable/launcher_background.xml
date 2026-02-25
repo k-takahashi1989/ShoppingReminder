@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 背景色（アイコンの背景に近い色を指定） -->
+    <item android:drawable="@color/white" />
+
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/splash_image" />
+    </item>
+</layer-list>

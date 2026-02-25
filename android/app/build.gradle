@@ -51,7 +51,8 @@ react {
 
     /* Hermes Commands */
     //   The hermes compiler command to run. By default it is 'hermesc'
-    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
+    // Windows: hermesc binary is not bundled in the npm package, use a pass-through wrapper
+    hermesCommand = "${rootDir}/../node_modules/react-native/sdks/hermesc/win64-bin/hermesc.bat"
     //
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
@@ -88,8 +89,8 @@ android {
         applicationId "com.ktakahashi.shoppingreminder"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.2"
         // .env の GOOGLE_MAPS_API_KEY を manifestPlaceholders 経由で注入
         manifestPlaceholders = [
             GOOGLE_MAPS_API_KEY: project.env.get("GOOGLE_MAPS_API_KEY") ?: "",

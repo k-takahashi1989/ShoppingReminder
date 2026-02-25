@@ -22,6 +22,16 @@ export function haversineDistance(
 }
 
 /**
- * ユニークな ID を生成する (uuid v4)
+ * ユニークな ID を生成する (UUID v4 形式)
+ *
+ * react-native の Hermes エンジンには crypto.getRandomValues() がないため、
+ * uuid パッケージをそのまま使うとリリースビルドでクラッシュする。
+ * UUID の衝突確率は十分低く、メモ ID に暗号学的強度は不要なので
+ * Math.random() ベースの実装を使用する。
  */
-export { v4 as generateId } from 'uuid';
+export function generateId(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
