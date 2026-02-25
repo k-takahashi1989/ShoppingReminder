@@ -12,9 +12,11 @@ interface SettingsState {
   defaultRadius: number;               // デフォルトのジオフェンス半径 (m)
   maxRadius: number;                   // スライダー最大値
   totalMemoRegistrations: number;      // 新規メモ登録累計（広告表示判定用）
+  seenTutorials: string[];             // 表示済みチュートリアルのキー
   setDefaultRadius: (radius: number) => void;
   setMaxRadius: (max: number) => void;
   incrementMemoRegistrations: () => void;
+  markTutorialSeen: (key: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -23,21 +25,30 @@ export const useSettingsStore = create<SettingsState>()(
       defaultRadius: 200,
       maxRadius: 400,
       totalMemoRegistrations: 0,
+      seenTutorials: [],
       setDefaultRadius: (radius: number) => set({ defaultRadius: radius }),
       incrementMemoRegistrations: () =>
         set(state => ({ totalMemoRegistrations: state.totalMemoRegistrations + 1 })),
       setMaxRadius: (max: number) => set(state => ({
         maxRadius: max,
-        // デフォルト半径が新しい上限を超えている場合は切り詰め
         defaultRadius: state.defaultRadius > max ? max : state.defaultRadius,
       })),
+      markTutorialSeen: (key: string) =>
+        set(state => ({
+          seenTutorials: state.seenTutorials.includes(key)
+            ? state.seenTutorials
+            : [...state.seenTutorials, key],
+        })),
     }),
     {
       name: 'settings',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => mmkvStorage),
       migrate: (persisted: any, version: number) => {
-        if (version === 0 || !persisted) return persisted;
+        if (!persisted) return persisted;
+        if (version <= 1) {
+          return { ...persisted, seenTutorials: persisted.seenTutorials ?? [] };
+        }
         return persisted;
       },
     },

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,10 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdBanner from '../components/AdBanner';
+import TutorialTooltip from '../components/TutorialTooltip';
 import { useTranslation } from 'react-i18next';
 import { useMemoStore } from '../store/memoStore';
+import { useTutorial } from '../hooks/useTutorial';
 import { RootStackParamList, ShoppingItem, MemoLocation } from '../types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -28,6 +30,10 @@ export default function MemoDetailScreen(): React.JSX.Element {
   const toggleItem = useMemoStore(s => s.toggleItem);
   const updateMemo = useMemoStore(s => s.updateMemo);
   const deleteLocation = useMemoStore(s => s.deleteLocation);
+
+  const bellRef = useRef<View>(null);
+  const { step: tutStep, isActive: tutActive, targetLayout: tutLayout, advance: tutAdvance, skip: tutSkip } =
+    useTutorial('memoDetail', 1, [bellRef]);
 
   if (!memo) {
     return (
@@ -102,19 +108,20 @@ export default function MemoDetailScreen(): React.JSX.Element {
       {/* タイトル + 通知トグル + 編集ボタン */}
       <View style={styles.titleRow}>
         <Text style={styles.title}>{memo.title}</Text>
-        <TouchableOpacity
-          onPress={handleToggleNotification}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={styles.headerIcon}>
-          <Icon
-            name={memo.notificationEnabled ? 'notifications' : 'notifications-off'}
-            size={22}
-            color={memo.notificationEnabled ? '#4CAF50' : '#9E9E9E'}
-          />
-        </TouchableOpacity>
+        <View ref={bellRef}>
+          <TouchableOpacity
+            onPress={handleToggleNotification}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={styles.headerIcon}>
+            <Text style={styles.bellEmoji}>
+              {memo.notificationEnabled ? '🔔' : '🔕'}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity
           onPress={() => navigation.navigate('MemoEdit', { memoId })}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.pencilBtn}>
           <Icon name="edit" size={22} color="#757575" />
         </TouchableOpacity>
       </View>
@@ -173,6 +180,17 @@ export default function MemoDetailScreen(): React.JSX.Element {
       <View style={styles.bottomBar}>
         <AdBanner />
       </View>
+      <TutorialTooltip
+        visible={tutActive}
+        targetLayout={tutLayout}
+        text={t('tutorial.memoDetail.step1')}
+        stepLabel={`STEP 1 / 1`}
+        isLast
+        nextLabel={t('tutorial.ok')}
+        skipLabel={t('tutorial.skip')}
+        onNext={tutAdvance}
+        onSkip={tutSkip}
+      />
     </View>
   );
 }
@@ -191,6 +209,8 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 22, fontWeight: 'bold', color: '#212121', flex: 1, marginRight: 8 },
   headerIcon: { marginLeft: 8 },
+  bellEmoji: { fontSize: 22 },
+  pencilBtn: { marginLeft: 16 },
   section: {
     backgroundColor: '#fff',
     borderRadius: 12,

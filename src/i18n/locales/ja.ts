@@ -150,6 +150,21 @@ const ja = {
     memoEditExisting: 'メモを編集',
     locationPicker: '場所を選択',
   },
+
+  // ── Tutorial ──────────────────────────────────────────────
+  tutorial: {
+    skip: 'スキップ',
+    next: '次へ',
+    ok: 'OK',
+    memoEdit: {
+      step1: '📝 メモのタイトルを入力しましょう',
+      step2: '✏️ アイテムを入力するとプラスボタンが表示されます',
+      step3: '✅ 「確認する」で保存して詳細画面へ進みます',
+    },
+    memoDetail: {
+      step1: '🔔 ベルマークで通知の ON / OFF を切り替えられます',
+    },
+  },
 } as const;
 
 export default ja;

@@ -25,6 +25,8 @@ import { useInterstitialAd } from '../hooks/useInterstitialAd';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList, ShoppingItem } from '../types';
+import TutorialTooltip from '../components/TutorialTooltip';
+import { useTutorial } from '../hooks/useTutorial';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'MemoEdit'>;
@@ -51,6 +53,13 @@ export default function MemoEditScreen(): React.JSX.Element {
   const [title, setTitle] = useState(existingMemo?.title ?? '');
   const [newItemName, setNewItemName] = useState('');
   const [savedMemoId, setSavedMemoId] = useState<string | undefined>(memoId);
+
+  // チュートリアル用 refs
+  const titleInputRef = useRef<View>(null);
+  const addRowRef = useRef<View>(null);
+  const doneBtnRef = useRef<View>(null);
+  const { step: tutStep, isActive: tutActive, targetLayout: tutLayout, advance: tutAdvance, skip: tutSkip } =
+    useTutorial('memoEdit', 3, [titleInputRef, addRowRef, doneBtnRef]);
 
   const currentItems = useMemoStore(
     useShallow((s): ShoppingItem[] => {
@@ -184,15 +193,17 @@ export default function MemoEditScreen(): React.JSX.Element {
         }}>
         {/* タイトル */}
         <Text style={styles.label}>{t('memoEdit.titleLabel')}</Text>
-        <TextInput
-          style={styles.titleInput}
-          value={title}
-          onChangeText={setTitle}
-          placeholder={t('memoEdit.titlePlaceholder')}
-          placeholderTextColor="#BDBDBD"
-          onBlur={handleSaveTitle}
-          returnKeyType="done"
-        />
+        <View ref={titleInputRef}>
+          <TextInput
+            style={styles.titleInput}
+            value={title}
+            onChangeText={setTitle}
+            placeholder={t('memoEdit.titlePlaceholder')}
+            placeholderTextColor="#BDBDBD"
+            onBlur={handleSaveTitle}
+            returnKeyType="done"
+          />
+        </View>
 
         {/* アイテム */}
         <Text style={styles.label}>{t('memoEdit.itemsLabel')}</Text>
@@ -206,7 +217,7 @@ export default function MemoEditScreen(): React.JSX.Element {
         )}
 
         {/* アイテム入力 */}
-        <View style={styles.addRow}>
+        <View ref={addRowRef} style={styles.addRow}>
           <TextInput
             style={styles.addInput}
             value={newItemName}
@@ -229,10 +240,23 @@ export default function MemoEditScreen(): React.JSX.Element {
         </View>
       </ScrollView>
 
-      {/* 完了 */}
-      <TouchableOpacity style={[styles.doneBtn, { marginBottom: Math.max(insets.bottom, 16) }]} onPress={handleDone}>
-        <Text style={styles.doneBtnText}>{t('memoEdit.doneButton')}</Text>
-      </TouchableOpacity>
+      {/* 確認する */}
+      <View ref={doneBtnRef}>
+        <TouchableOpacity style={[styles.doneBtn, { marginBottom: Math.max(insets.bottom, 16) }]} onPress={handleDone}>
+          <Text style={styles.doneBtnText}>{t('memoEdit.doneButton')}</Text>
+        </TouchableOpacity>
+      </View>
+      <TutorialTooltip
+        visible={tutActive}
+        targetLayout={tutLayout}
+        text={[t('tutorial.memoEdit.step1'), t('tutorial.memoEdit.step2'), t('tutorial.memoEdit.step3')][tutStep] ?? ''}
+        stepLabel={`STEP ${tutStep + 1} / 3`}
+        isLast={tutStep === 2}
+        nextLabel={tutStep === 2 ? t('tutorial.ok') : t('tutorial.next')}
+        skipLabel={t('tutorial.skip')}
+        onNext={tutAdvance}
+        onSkip={tutSkip}
+      />
     </KeyboardAvoidingView>
   );
 }

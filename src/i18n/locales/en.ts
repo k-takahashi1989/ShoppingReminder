@@ -144,6 +144,20 @@ const en: Translation = {
     memoEditExisting: 'Edit Memo',
     locationPicker: 'Pick Location',
   },
+
+  tutorial: {
+    skip: 'Skip',
+    next: 'Next',
+    ok: 'OK',
+    memoEdit: {
+      step1: '📝 Enter the memo title here',
+      step2: '✏️ Type an item name to reveal the add button',
+      step3: '✅ Tap "Confirm" to save and view the details',
+    },
+    memoDetail: {
+      step1: '🔔 Tap the bell to toggle location notifications on / off',
+    },
+  },
 };
 
 export default en;
