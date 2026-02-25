@@ -4,6 +4,8 @@ import {
   Text,
   TouchableOpacity,
   Modal,
+  Platform,
+  StatusBar,
   StyleSheet,
   Dimensions,
 } from 'react-native';
@@ -44,8 +46,13 @@ export default function TutorialTooltip({
 }: Props): React.JSX.Element | null {
   if (!visible || !targetLayout) return null;
 
+  // statusBarTranslucent Modal の座標系はステータスバー上端から始まるが
+  // measureInWindow はステータスバーを除いたアプリ窓からの座標を返すため
+  // Android のステータスバー高さ分だけオフセットを補正する
+  const statusBarOffset = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+
   const sx = Math.max(targetLayout.x - SPOT_PAD, 0);
-  const sy = Math.max(targetLayout.y - SPOT_PAD, 0);
+  const sy = Math.max(targetLayout.y + statusBarOffset - SPOT_PAD, 0);
   const sw = Math.min(targetLayout.width + SPOT_PAD * 2, SCREEN_W);
   const sh = targetLayout.height + SPOT_PAD * 2;
 

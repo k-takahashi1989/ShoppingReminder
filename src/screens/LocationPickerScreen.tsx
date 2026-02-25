@@ -278,6 +278,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           }}
           fetchDetails={true}
           enablePoweredByContainer={false}
+          textInputProps={{ placeholderTextColor: '#9E9E9E' }}
           styles={{
             container: styles.placesContainer,
             textInputContainer: styles.placesTextInputContainer,
