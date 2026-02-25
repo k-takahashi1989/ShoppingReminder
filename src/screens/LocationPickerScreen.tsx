@@ -175,26 +175,27 @@ export default function LocationPickerScreen(): React.JSX.Element {
     reverseGeocode(coord.latitude, coord.longitude);
   };
 
+  const handleGpsPress = () => {
+    Keyboard.dismiss();
+    Geolocation.getCurrentPosition(
+      pos => {
+        const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        setPicked(coords);
+        reverseGeocode(coords.latitude, coords.longitude);
+        setTimeout(() => {
+          mapRef.current?.animateToRegion(
+            { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+            400,
+          );
+        }, 100);
+      },
+      _err => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
+
   const handlePlaceSelected = (_data: GooglePlaceData, details: GooglePlaceDetail | null) => {
-    // 「現在地を使用」が選択された場合 (details が null)
-    if (!details?.geometry?.location) {
-      Geolocation.getCurrentPosition(
-        pos => {
-          const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
-          setPicked(coords);
-          reverseGeocode(coords.latitude, coords.longitude);
-          setTimeout(() => {
-            mapRef.current?.animateToRegion(
-              { ...coords, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-              400,
-            );
-          }, 100);
-        },
-        _err => {},
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
-      );
-      return;
-    }
+    if (!details?.geometry?.location) return;
     const { lat, lng } = details.geometry.location;
     const coords = { latitude: lat, longitude: lng };
     setPicked(coords);
@@ -295,8 +296,7 @@ export default function LocationPickerScreen(): React.JSX.Element {
           }}
           fetchDetails={true}
           enablePoweredByContainer={false}
-          currentLocation={true}
-          currentLocationLabel={i18n.language === 'ja' ? '現在地を使用' : 'Use current location'}
+          currentLocation={false}
           textInputProps={{ placeholderTextColor: '#9E9E9E' }}
           styles={{
             container: styles.placesContainer,
@@ -307,6 +307,11 @@ export default function LocationPickerScreen(): React.JSX.Element {
             description: styles.placesDescription,
           }}
         />
+
+        {/* 現在地ボタン（検索バー右端） */}
+        <TouchableOpacity style={styles.gpsBtn} onPress={handleGpsPress}>
+          <Icon name="my-location" size={20} color="#4CAF50" />
+        </TouchableOpacity>
 
         {/* ヒントバッジ */}
         <View style={styles.hintBadge}>
@@ -390,7 +395,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     left: 10,
-    right: 10,
+    right: 58, // GPSボタン分の余白
     zIndex: 10,
     elevation: 5,
   },
@@ -429,6 +434,25 @@ const styles = StyleSheet.create({
   /* 地図 */
   mapContainer: { flex: 1, position: 'relative' },
   map: { flex: 1 },
+
+  /* 現在地ボタン */
+  gpsBtn: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 44,
+    height: 44,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+    zIndex: 11,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
 
   /* ヒントバッジ */
   hintBadge: {

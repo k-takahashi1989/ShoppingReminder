@@ -101,7 +101,7 @@ async function checkGeofences(
 // ============================================================
 // バックグラウンドタスク本体
 // ============================================================
-const backgroundTask = async (): Promise<void> => {
+export const backgroundTask = async (): Promise<void> => {
   loadInsideCache();
 
   // eslint-disable-next-line no-constant-condition
