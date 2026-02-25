@@ -108,7 +108,7 @@ export default function MemoDetailScreen(): React.JSX.Element {
       {/* タイトル + 通知トグル + 編集ボタン */}
       <View style={styles.titleRow}>
         <Text style={styles.title}>{memo.title}</Text>
-        <View ref={bellRef}>
+        <View ref={bellRef} collapsable={false}>
           <TouchableOpacity
             onPress={handleToggleNotification}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

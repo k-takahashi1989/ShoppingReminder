@@ -193,7 +193,7 @@ export default function MemoEditScreen(): React.JSX.Element {
         }}>
         {/* タイトル */}
         <Text style={styles.label}>{t('memoEdit.titleLabel')}</Text>
-        <View ref={titleInputRef}>
+        <View ref={titleInputRef} collapsable={false}>
           <TextInput
             style={styles.titleInput}
             value={title}
@@ -217,7 +217,7 @@ export default function MemoEditScreen(): React.JSX.Element {
         )}
 
         {/* アイテム入力 */}
-        <View ref={addRowRef} style={styles.addRow}>
+        <View ref={addRowRef} collapsable={false} style={styles.addRow}>
           <TextInput
             style={styles.addInput}
             value={newItemName}
@@ -241,7 +241,7 @@ export default function MemoEditScreen(): React.JSX.Element {
       </ScrollView>
 
       {/* 確認する */}
-      <View ref={doneBtnRef}>
+      <View ref={doneBtnRef} collapsable={false}>
         <TouchableOpacity style={[styles.doneBtn, { marginBottom: Math.max(insets.bottom, 16) }]} onPress={handleDone}>
           <Text style={styles.doneBtnText}>{t('memoEdit.doneButton')}</Text>
         </TouchableOpacity>

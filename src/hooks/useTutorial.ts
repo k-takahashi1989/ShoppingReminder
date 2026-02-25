@@ -32,7 +32,7 @@ export function useTutorial(key: string, totalSteps: number, refs: AnyRef[]) {
           setTargetLayout({ x, y, width, height });
         }
       });
-    }, 200);
+    }, 400);
 
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
