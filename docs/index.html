@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ShoppingReminder — プライバシー & お問い合わせ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>ShoppingReminder</h1>
+    <p>このページはアプリのプライバシーポリシーとお問い合わせフォームをホストします。</p>
+
+    <nav>
+      <a class="btn" href="privacy.html">プライバシーポリシー</a>
+      <a class="btn" href="#contact">お問い合わせ</a>
+    </nav>
+
+    <section id="contact">
+      <h2>お問い合わせ</h2>
+      <!-- Formspree を使うには下の action を実際の Formspree エンドポイントに置き換えてください -->
+      <!-- 例: https://formspree.io/f/abcxyz -->
+      <form id="contact-form" action="https://formspree.io/f/REPLACE_FORM_ID" method="POST">
+        <label>
+          お名前
+          <input type="text" name="name" required>
+        </label>
+        <label>
+          メールアドレス
+          <input type="email" name="email" required>
+        </label>
+        <label>
+          メッセージ
+          <textarea name="message" rows="6" required></textarea>
+        </label>
+        <button type="submit">送信</button>
+      </form>
+      <p class="note">注: Formspree のフォームIDをセットすると、フォーム送信は Formspree 経由でメールに届きます。詳しい手順は同梱の README をご覧ください。</p>
+    </section>
+
+    <footer>
+      <p>&copy; ShoppingReminder</p>
+    </footer>
+  </main>
+</body>
+</html>
