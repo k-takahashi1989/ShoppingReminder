@@ -111,7 +111,7 @@ const en: Translation = {
     },
     alertFineLocation: {
       title: 'Location permission required',
-      message: 'Go to Settings > Apps > ShoppingReminder > Location to grant permission',
+      message: 'Go to Settings > Apps > Yorimichi > Location to grant permission',
       openSettings: 'Open Settings',
     },
     alertBackground: {

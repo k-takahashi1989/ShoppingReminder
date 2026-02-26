@@ -115,7 +115,7 @@ const ja = {
     },
     alertFineLocation: {
       title: '位置情報の許可が必要です',
-      message: '設定 > アプリ > ShoppingReminder > 位置情報から許可してください',
+      message: '設定 > アプリ > Yorimichi > 位置情報から許可してください',
       openSettings: '設定を開く',
     },
     alertBackground: {

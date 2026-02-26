@@ -7,7 +7,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 
-class ShoppingReminderApplication : Application(), ReactApplication {
+class YorimichiApplication : Application(), ReactApplication {
 
   override val reactHost: ReactHost by lazy {
     getDefaultReactHost(

@@ -1,5 +1,5 @@
 /**
- * ShoppingReminder - メインエントリコンポーネント
+ * Yorimichi - メインエントリコンポーネント
  * @format
  */
 

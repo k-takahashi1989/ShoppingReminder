@@ -136,7 +136,7 @@ export async function startGeofenceMonitoring(): Promise<boolean> {
         type: 'drawable',
       },
       color: '#4CAF50',
-      linkingURI: 'shoppingreminder://open',
+      linkingURI: 'yorimichi://open',
       parameters: {},
     });
     return true;
